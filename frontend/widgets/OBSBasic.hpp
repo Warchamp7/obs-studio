@@ -562,6 +562,7 @@ private:
 	QPointer<OBSBasicAdvAudio> advAudioWindow;
 	QPointer<OBSBasicFilters> filters;
 	QPointer<OBSAbout> about;
+	QPointer<OBSBasicSourceSelect> addWindow;
 	QPointer<OBSLogViewer> logView;
 	QPointer<QWidget> stats;
 	QPointer<QWidget> remux;
@@ -1143,11 +1144,8 @@ private:
 	static void SourceAudioDeactivated(void *data, calldata_t *params);
 	static void SourceRenamed(void *data, calldata_t *params);
 
-	void AddSource(const char *id);
-	QMenu *CreateAddSourcePopupMenu();
-	void AddSourcePopupMenu(const QPoint &pos);
-
 private slots:
+	void AddSourceDialog();
 	void RenameSources(OBSSource source, QString newName, QString prevName);
 
 	void ActivateAudioSource(OBSSource source);
