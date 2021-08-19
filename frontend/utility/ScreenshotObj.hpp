@@ -30,10 +30,23 @@ class ScreenshotObj : public QObject {
 public:
 	ScreenshotObj(obs_source_t *source);
 	~ScreenshotObj() override;
-	void Screenshot();
-	void Download();
-	void Copy();
-	void MuxAndFinish();
+
+	void processStage();
+	void renderScreenshot();
+	void downloadData();
+	void copyData();
+	void saveToFile();
+	void muxFile();
+	void onFinished();
+
+	void setSize(QSize size);
+	void setSize(int width, int height);
+	void setSaveToFile(bool save);
+
+private:
+	enum class Stage { Render, Download, Output, Finished };
+
+	Stage stage = Stage::Render;
 
 	gs_texrender_t *texrender = nullptr;
 	gs_stagesurf_t *stagesurf = nullptr;
@@ -41,12 +54,21 @@ public:
 	std::string path;
 	QImage image;
 	std::vector<uint8_t> half_bytes;
-	uint32_t cx;
-	uint32_t cy;
+	QSize customSize;
+	uint32_t sourceWidth = 0;
+	uint32_t sourceHeight = 0;
+	uint32_t outputWidth = 0;
+	uint32_t outputHeight = 0;
+
 	std::thread th;
+	std::shared_ptr<QImage> imagePtr;
+	bool outputToFile = true;
 
-	int stage = 0;
+	friend void renderTick(void *param, float);
 
-public slots:
-	void Save();
+signals:
+	void imageReady(QImage image);
+
+private slots:
+	void handleSave();
 };
