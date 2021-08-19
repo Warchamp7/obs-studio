@@ -242,6 +242,7 @@ private:
 	QPointer<OBSBasicFilters> filters;
 	QPointer<QDockWidget> statsDock;
 	QPointer<OBSAbout> about;
+	QPointer<OBSBasicSourceSelect> addWindow;
 	QPointer<OBSMissingFiles> missDialog;
 	QPointer<OBSLogViewer> logView;
 
@@ -795,9 +796,6 @@ private:
 
 	void ResizePreview(uint32_t cx, uint32_t cy);
 
-	void AddSource(const char *id);
-	QMenu *CreateAddSourcePopupMenu();
-	void AddSourcePopupMenu(const QPoint &pos);
 	void copyActionsDynamicProperties();
 
 	static void HotkeyTriggered(void *data, obs_hotkey_id id, bool pressed);
@@ -1092,7 +1090,7 @@ private slots:
 
 	void updateCheckFinished();
 
-	void AddSourceFromAction();
+	void AddSourceDialog();
 
 	void MoveSceneToTop();
 	void MoveSceneToBottom();

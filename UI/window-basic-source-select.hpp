@@ -19,6 +19,7 @@
 
 #include <obs.hpp>
 #include <memory>
+#include <QButtonGroup>
 
 #include "ui_OBSBasicSourceSelect.h"
 #include "undo-stack-obs.hpp"
@@ -31,8 +32,10 @@ class OBSBasicSourceSelect : public QDialog {
 
 private:
 	std::unique_ptr<Ui::OBSBasicSourceSelect> ui;
-	const char *id;
+	std::string id;
 	undo_stack &undo_s;
+
+	QPointer<QButtonGroup> sourceButtons;
 
 	static bool EnumSources(void *data, obs_source_t *source);
 	static bool EnumGroups(void *data, obs_source_t *source);
@@ -41,15 +44,16 @@ private:
 	static void OBSSourceAdded(void *data, calldata_t *calldata);
 
 private slots:
-	void on_buttonBox_accepted();
-	void on_buttonBox_rejected();
+	void on_addSourceButton_CreateNew_clicked(bool checked);
+	void AddExistingSource(bool checked);
 
-	void SourceAdded(OBSSource source);
-	void SourceRemoved(OBSSource source);
+	// void SourceAdded(OBSSource source);
+	// void SourceRemoved(OBSSource source);
+	void SelectSourceType();
 
 public:
-	OBSBasicSourceSelect(OBSBasic *parent, const char *id,
-			     undo_stack &undo_s);
+	OBSBasicSourceSelect(OBSBasic *parent, undo_stack &undo_s);
+	~OBSBasicSourceSelect();
 
 	OBSSource newSource;
 
