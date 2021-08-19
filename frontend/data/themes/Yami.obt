@@ -249,6 +249,11 @@
     background-color: var(--bg_base);
 }
 
+.text-title {
+    font-size: var(--font_large);
+    font-weight: bold;
+}
+
 .text-heading {
     font-size: var(--font_heading);
     font-weight: bold;
@@ -286,6 +291,48 @@
 
 .frame-notice QLabel {
     padding: var(--padding_large) 0px;
+}
+
+.dialog-container {
+    padding: var(--padding_large) var(--padding_xlarge);
+}
+
+.dialog-frame {
+    background-color: var(--grey6);
+    border-radius: var(--border_radius);
+    border: 1px solid var(--border_color);
+    margin: var(--spacing_base);
+}
+
+.dialog-frame > QWidget {
+    margin: var(--spacing_base) 0;
+}
+
+
+.add-item-button {
+    background-color: var(--grey5);
+    border-width: 1px;
+    border-color: var(--grey3);
+    padding: var(--padding_xlarge) var(--padding_wide);
+    border-radius: var(--border_radius_small);
+    outline: none;
+}
+
+.add-item-button:focus {
+    border-color: var(--white1);
+}
+
+.add-item-button:hover {
+    border-color: var(--primary_lighter);
+}
+
+.add-item-button:hover,
+.add-item-button:focus {
+    background: var(--primary);
+    background-image: url(theme:Dark/plus.svg);
+    background-repeat: no-repeat;
+    background-position: center right;
+    background-origin: content;
 }
 
 /* Icon Overrides */
@@ -589,6 +636,7 @@ QListWidget QLineEdit:focus {
 /* Settings QList */
 
 OBSBasicSettings QScrollBar:vertical {
+    background-color: var(--grey6);
     width: var(--settings_scrollbar_size);
     margin-left: 9px;
 }
@@ -2042,4 +2090,42 @@ OBSBasicAdvAudio #scrollAreaWidgetContents {
 #previewZoomInButton:focus,
 #previewZoomOutButton:focus {
     border: 1px solid var(--input_border_hover);
+}
+
+/* Add Source Dialog */
+
+#selectTypeFrame QPushButton,
+#selectSourceContainer QPushButton {
+    text-align: left;
+}
+
+#selectTypeFrame QPushButton {
+    background: var(--grey5);
+    border: 1px solid transparent;
+    padding: var(--padding_xlarge) var(--padding_wide);
+    margin: var(--spacing_large);
+    outline: none;
+}
+
+#selectTypeFrame QPushButton:hover {
+    background-color: var(--grey3);
+    border-color: var(--grey1);
+    border-style: solid;
+}
+
+#selectTypeFrame QPushButton:checked {
+    background-color: var(--purple4);
+    border-color: var(--purple2);
+    border-style: solid;
+}
+
+#selectTypeFrame QPushButton:focus {
+    border-color: var(--white1);
+    border-style: solid;
+}
+
+#selectTypeFrame QPushButton:pressed {
+    background-color: var(--grey6);
+    border-color: var(--grey3);
+    border-style: solid;
 }

@@ -19,10 +19,11 @@
 
 #include "ui_OBSBasicSourceSelect.h"
 
+#include <QButtonGroup>
 #include <utility/undo_stack.hpp>
 #include <widgets/OBSBasic.hpp>
 
-#include <obs.hpp>
+#include "OBSApp.hpp"
 
 #include <QDialog>
 
@@ -31,24 +32,44 @@ class OBSBasicSourceSelect : public QDialog {
 
 private:
 	std::unique_ptr<Ui::OBSBasicSourceSelect> ui;
-	const char *id;
+	std::string sourceTypeId;
 	undo_stack &undo_s;
 
-	static bool EnumSources(void *data, obs_source_t *source);
-	static bool EnumGroups(void *data, obs_source_t *source);
+	QPointer<QButtonGroup> sourceButtons;
+
+	std::vector<obs_source_t *> sources;
+	std::vector<obs_source_t *> groups;
+
+	void getSources();
+	void updateRecentSources();
+	void updateExistingSources();
+
+	static bool enumSourcesCallback(void *data, obs_source_t *source);
+	static bool enumGroupsCallback(void *data, obs_source_t *source);
 
 	static void OBSSourceRemoved(void *data, calldata_t *calldata);
 	static void OBSSourceAdded(void *data, calldata_t *calldata);
 
-private slots:
-	void on_buttonBox_accepted();
-	void on_buttonBox_rejected();
+	static int getSortedButtonPosition(const QList<QPushButton *> *list, const char *name);
+	QPointer<QPushButton> createTypeButton(const char *type, const char *name);
+	void getSourceTypes();
 
-	void SourceAdded(OBSSource source);
-	void SourceRemoved(OBSSource source);
+	void createNewSource();
+
+signals:
+	void sourcesUpdated();
+
+private slots:
+	void on_createNewSource_clicked(bool checked);
+	void addExistingSource(bool checked);
+
+	// void SourceAdded(OBSSource source);
+	// void SourceRemoved(OBSSource source);
+	void sourceTypeClicked(QAbstractButton *button);
 
 public:
-	OBSBasicSourceSelect(OBSBasic *parent, const char *id, undo_stack &undo_s);
+	OBSBasicSourceSelect(OBSBasic *parent, undo_stack &undo_s);
+	~OBSBasicSourceSelect();
 
 	OBSSource newSource;
 
