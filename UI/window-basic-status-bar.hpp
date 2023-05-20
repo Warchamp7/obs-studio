@@ -5,28 +5,28 @@
 #include <QTimer>
 #include <util/platform.h>
 #include <obs.h>
+#include <memory>
+
+#include "ui_StatusBarWidget.h"
 
 class QLabel;
+class StatusBarWidget;
 
 class OBSBasicStatusBar : public QStatusBar {
 	Q_OBJECT
 
 private:
-	QLabel *delayInfo;
-	QLabel *droppedFrames;
-	QLabel *streamIcon;
-	QLabel *streamTime;
-	QLabel *recordTime;
-	QLabel *recordIcon;
-	QLabel *cpuUsage;
-	QLabel *kbps;
-	QLabel *statusSquare;
+	StatusBarWidget *mainWidget = nullptr;
 
 	obs_output_t *streamOutput = nullptr;
 	obs_output_t *recordOutput = nullptr;
 	bool active = false;
 	bool overloadedNotify = true;
 	bool streamPauseIconToggle = false;
+	bool disconnected = false;
+	bool firstCongestionUpdate = false;
+
+	std::vector<float> congestionArray;
 
 	int retries = 0;
 	int totalStreamSeconds = 0;
@@ -46,10 +46,12 @@ private:
 	uint64_t lastBytesSent = 0;
 	uint64_t lastBytesSentTime = 0;
 
-	QPixmap transparentPixmap;
-	QPixmap greenPixmap;
-	QPixmap grayPixmap;
-	QPixmap redPixmap;
+	QPixmap excellentPixmap;
+	QPixmap goodPixmap;
+	QPixmap mediocrePixmap;
+	QPixmap badPixmap;
+	QPixmap disconnectedPixmap;
+	QPixmap inactivePixmap;
 
 	QPixmap recordingActivePixmap;
 	QPixmap recordingPausePixmap;
@@ -95,4 +97,16 @@ public:
 	void RecordingUnpaused();
 
 	void ReconnectClear();
+};
+
+class StatusBarWidget : public QWidget {
+	Q_OBJECT
+
+	friend class OBSBasicStatusBar;
+
+private:
+	std::unique_ptr<Ui_StatusBarWidget> ui;
+
+public:
+	StatusBarWidget(QWidget *parent = nullptr);
 };

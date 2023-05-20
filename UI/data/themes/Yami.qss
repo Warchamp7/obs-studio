@@ -132,9 +132,9 @@ SourceTree QWidget {
 }
 
 * [frameShape="1"], * [frameShape="2"], * [frameShape="3"], * [frameShape="4"], * [frameShape="5"], * [frameShape="6"] {
-    border: 1px solid palette(dark);
+    color: #3c404b;
+    margin-top: 1px;
 }
-
 
 /* Misc */
 
@@ -342,7 +342,9 @@ QScrollArea {
 }
 
 OBSBasicStatusBar {
-    margin-top: 8px;
+    margin-top: 4px;
+    border: 1px solid #3c404b;
+    background: palette(dark);
 }
 
 /* Group Box */
