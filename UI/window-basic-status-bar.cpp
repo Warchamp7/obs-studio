@@ -22,39 +22,43 @@ StatusBarWidget::StatusBarWidget(QWidget *parent)
 OBSBasicStatusBar::OBSBasicStatusBar(QWidget *parent)
 	: QStatusBar(parent),
 	  excellentPixmap(QIcon(":/res/images/network-excellent.svg")
-				  .pixmap(QSize(20, 20))),
+				  .pixmap(QSize(16, 16))),
 	  goodPixmap(
-		  QIcon(":/res/images/network-good.svg").pixmap(QSize(20, 20))),
+		  QIcon(":/res/images/network-good.svg").pixmap(QSize(16, 16))),
 	  mediocrePixmap(QIcon(":/res/images/network-mediocre.svg")
-				 .pixmap(QSize(20, 20))),
+				 .pixmap(QSize(16, 16))),
 	  badPixmap(
-		  QIcon(":/res/images/network-bad.svg").pixmap(QSize(20, 20))),
+		  QIcon(":/res/images/network-bad.svg").pixmap(QSize(16, 16))),
 	  disconnectedPixmap(QIcon(":/res/images/network-disconnected.svg")
-				     .pixmap(QSize(20, 20))),
+				     .pixmap(QSize(16, 16))),
 	  inactivePixmap(QIcon(":/res/images/network-inactive.svg")
-				 .pixmap(QSize(20, 20))),
+				 .pixmap(QSize(16, 16))),
 	  recordingActivePixmap(QIcon(":/res/images/recording-active.svg")
-					.pixmap(QSize(20, 20))),
+					.pixmap(QSize(16, 16))),
 	  recordingPausePixmap(QIcon(":/res/images/recording-pause.svg")
-				       .pixmap(QSize(20, 20))),
+				       .pixmap(QSize(16, 16))),
 	  recordingPauseInactivePixmap(
 		  QIcon(":/res/images/recording-pause-inactive.svg")
-			  .pixmap(QSize(20, 20))),
+			  .pixmap(QSize(16, 16))),
 	  recordingInactivePixmap(QIcon(":/res/images/recording-inactive.svg")
-					  .pixmap(QSize(20, 20))),
+					  .pixmap(QSize(16, 16))),
 	  streamingActivePixmap(QIcon(":/res/images/streaming-active.svg")
-					.pixmap(QSize(20, 20))),
+					.pixmap(QSize(16, 16))),
 	  streamingInactivePixmap(QIcon(":/res/images/streaming-inactive.svg")
-					  .pixmap(QSize(20, 20)))
+					  .pixmap(QSize(16, 16)))
 {
 	mainWidget = new StatusBarWidget(this);
 	mainWidget->ui->delayInfo->setText("");
-	mainWidget->ui->droppedFrames->setText("");
+	mainWidget->ui->droppedFrames->setText(
+		QTStr("DroppedFrames").arg("0", "0.0"));
 	mainWidget->ui->statusIcon->setPixmap(inactivePixmap);
 	mainWidget->ui->streamIcon->setPixmap(streamingInactivePixmap);
+	mainWidget->ui->streamTime->setDisabled(true);
 	mainWidget->ui->recordIcon->setPixmap(recordingInactivePixmap);
-	mainWidget->ui->delayLine->hide();
-	mainWidget->ui->droppedFramesLine->hide();
+	mainWidget->ui->recordTime->setDisabled(true);
+	mainWidget->ui->delayFrame->hide();
+	mainWidget->ui->issuesFrame->hide();
+	mainWidget->ui->kbps->hide();
 
 	addPermanentWidget(mainWidget);
 }
@@ -85,11 +89,15 @@ void OBSBasicStatusBar::Activate()
 
 	if (streamOutput) {
 		mainWidget->ui->streamIcon->setPixmap(streamingActivePixmap);
+		mainWidget->ui->streamTime->setDisabled(false);
+		mainWidget->ui->issuesFrame->show();
+		mainWidget->ui->kbps->show();
 		firstCongestionUpdate = true;
 	}
 
 	if (recordOutput) {
 		mainWidget->ui->recordIcon->setPixmap(recordingActivePixmap);
+		mainWidget->ui->recordTime->setDisabled(false);
 	}
 }
 
@@ -101,7 +109,12 @@ void OBSBasicStatusBar::Deactivate()
 
 	if (!streamOutput) {
 		mainWidget->ui->streamTime->setText(QString("LIVE: 00:00:00"));
+		mainWidget->ui->streamTime->setDisabled(true);
 		mainWidget->ui->streamIcon->setPixmap(streamingInactivePixmap);
+		mainWidget->ui->statusIcon->setPixmap(inactivePixmap);
+		mainWidget->ui->delayFrame->hide();
+		mainWidget->ui->issuesFrame->hide();
+		mainWidget->ui->kbps->hide();
 		totalStreamSeconds = 0;
 		congestionArray.clear();
 		disconnected = false;
@@ -110,6 +123,7 @@ void OBSBasicStatusBar::Deactivate()
 
 	if (!recordOutput) {
 		mainWidget->ui->recordTime->setText(QString("REC: 00:00:00"));
+		mainWidget->ui->recordTime->setDisabled(true);
 		mainWidget->ui->recordIcon->setPixmap(recordingInactivePixmap);
 		totalRecordSeconds = 0;
 	}
@@ -118,9 +132,8 @@ void OBSBasicStatusBar::Deactivate()
 		delete refreshTimer;
 
 		mainWidget->ui->delayInfo->setText("");
-		mainWidget->ui->delayLine->hide();
-		mainWidget->ui->droppedFrames->setText("");
-		mainWidget->ui->droppedFramesLine->hide();
+		mainWidget->ui->droppedFrames->setText(
+			QTStr("DroppedFrames").arg("0", "0.0"));
 		mainWidget->ui->kbps->setText("0 kbps");
 
 		delaySecTotal = 0;
@@ -156,9 +169,9 @@ void OBSBasicStatusBar::UpdateDelayMsg()
 			msg = msg.arg(QString::number(delaySecTotal));
 		}
 	}
-
-	if (!mainWidget->ui->delayLine->isVisible())
-		mainWidget->ui->delayLine->show();
+	
+	if (!mainWidget->ui->delayFrame->isVisible())
+		mainWidget->ui->delayFrame->show();
 
 	mainWidget->ui->delayInfo->setText(msg);
 }
@@ -193,6 +206,9 @@ void OBSBasicStatusBar::UpdateBandwidth()
 
 	mainWidget->ui->kbps->setText(text);
 
+	if (!mainWidget->ui->kbps->isVisible())
+		mainWidget->ui->kbps->show();
+
 	lastBytesSent = bytesSent;
 	lastBytesSentTime = bytesSentTime;
 	bitrateUpdateSeconds = 0;
@@ -206,10 +222,32 @@ void OBSBasicStatusBar::UpdateCPUUsage()
 
 	QString text;
 	text += QString("CPU: ") +
-		QString::number(main->GetCPUUsage(), 'f', 1) + QString("%, ") +
-		QString::number(obs_get_active_fps(), 'f', 2) + QString(" fps");
+		QString::number(main->GetCPUUsage(), 'f', 1) + QString("%");
 
 	mainWidget->ui->cpuUsage->setText(text);
+}
+
+void OBSBasicStatusBar::UpdateCurrentFPS()
+{
+	OBSBasic *main = qobject_cast<OBSBasic *>(parent());
+	if (!main)
+		return;
+
+  struct obs_video_info ovi;
+
+  QString targetFPS = "--";
+  if (obs_get_video_info(&ovi)) {
+	  double framerate = (double)ovi.fps_num / (double)ovi.fps_den;
+
+	  // Limit target framerate to a max of 2 decimals without being fixed length
+	  targetFPS = QString::number(floor(framerate * 100) / 100);
+  }
+
+	QString text;
+  text += QString::number(obs_get_active_fps(), 'f', 2) + QString(" / ") +
+	  targetFPS + QString(" FPS");
+
+	mainWidget->ui->fpsCurrent->setText(text);
 }
 
 void OBSBasicStatusBar::UpdateStreamTime()
@@ -224,6 +262,8 @@ void OBSBasicStatusBar::UpdateStreamTime()
 	QString text = QString::asprintf("LIVE: %02d:%02d:%02d", hours, minutes,
 					 seconds);
 	mainWidget->ui->streamTime->setText(text);
+	if (streamOutput && !mainWidget->ui->streamTime->isEnabled())
+		mainWidget->ui->streamTime->setDisabled(false);
 
 	if (reconnectTimeout > 0) {
 		QString msg = QTStr("Basic.StatusBar.Reconnecting")
@@ -267,6 +307,8 @@ void OBSBasicStatusBar::UpdateRecordTime()
 						 minutes, seconds);
 
 		mainWidget->ui->recordTime->setText(text);
+		if (recordOutput && !mainWidget->ui->recordTime->isEnabled())
+			mainWidget->ui->recordTime->setDisabled(false);
 	} else {
 		mainWidget->ui->recordIcon->setPixmap(
 			streamPauseIconToggle ? recordingPauseInactivePixmap
@@ -292,9 +334,10 @@ void OBSBasicStatusBar::UpdateDroppedFrames()
 	text = text.arg(QString::number(totalDropped),
 			QString::number(percent, 'f', 1));
 	mainWidget->ui->droppedFrames->setText(text);
-
-	if (!mainWidget->ui->droppedFramesLine->isVisible())
-		mainWidget->ui->droppedFramesLine->show();
+	
+	if (!mainWidget->ui->issuesFrame->isVisible())
+		mainWidget->ui->issuesFrame->show();
+	
 
 	/* ----------------------------------- *
 	 * calculate congestion color          */

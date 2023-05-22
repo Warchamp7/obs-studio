@@ -132,8 +132,7 @@ SourceTree QWidget {
 }
 
 * [frameShape="1"], * [frameShape="2"], * [frameShape="3"], * [frameShape="4"], * [frameShape="5"], * [frameShape="6"] {
-    color: #3c404b;
-    margin-top: 1px;
+    border: 1px solid palette(dark);
 }
 
 /* Misc */
@@ -341,10 +340,21 @@ QScrollArea {
     border-radius: 4px;
 }
 
+/* Qt enforces a padding inside it's status bar, so we
+ * oversize it and use margin to crunch it back down
+ */
 OBSBasicStatusBar {
     margin-top: 4px;
-    border: 1px solid #3c404b;
+    border: 0px solid #3c404b;
+    border-top-width: 1px;
     background: palette(dark);
+}
+
+#StatusBarWidget > QFrame {
+  margin-top: 2px;
+  border: 0px solid #3c404b;
+  border-left-width: 1px;
+  padding: 0px 8px 4px;
 }
 
 /* Group Box */

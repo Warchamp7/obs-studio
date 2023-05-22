@@ -394,6 +394,11 @@ OBSBasic::OBSBasic(QWidget *parent)
 		SLOT(UpdateCPUUsage()));
 	cpuUsageTimer->start(3000);
 
+	currentFPSTimer = new QTimer(this);
+	connect(currentFPSTimer.data(), SIGNAL(timeout()), ui->statusbar,
+		SLOT(UpdateCurrentFPS()));
+	currentFPSTimer->start(3000);
+
 	diskFullTimer = new QTimer(this);
 	connect(diskFullTimer, SIGNAL(timeout()), this,
 		SLOT(CheckDiskSpaceRemaining()));
@@ -2830,6 +2835,7 @@ OBSBasic::~OBSBasic()
 	 * libobs. */
 	delete cpuUsageTimer;
 	os_cpu_usage_info_destroy(cpuUsageInfo);
+	delete currentFPSTimer;
 
 	obs_hotkey_set_callback_routing_func(nullptr, nullptr);
 	ClearHotkeys();

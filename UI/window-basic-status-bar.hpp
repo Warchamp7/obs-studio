@@ -83,6 +83,7 @@ private slots:
 	void ReconnectSuccess();
 	void UpdateStatusBar();
 	void UpdateCPUUsage();
+	void UpdateCurrentFPS();
 
 public:
 	OBSBasicStatusBar(QWidget *parent);

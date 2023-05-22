@@ -264,6 +264,7 @@ private:
 	QPointer<OBSLogViewer> logView;
 
 	QPointer<QTimer> cpuUsageTimer;
+	QPointer<QTimer> currentFPSTimer;
 	QPointer<QTimer> diskFullTimer;
 
 	QPointer<QTimer> nudge_timer;
