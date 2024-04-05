@@ -15,7 +15,7 @@
 #endif
 
 #define MIN_DB -96.0
-#define MAX_DB 26.0
+#define MAX_DB 6.0
 static inline void setMixer(obs_source_t *source, const int mixerIdx,
 			    const bool checked);
 
@@ -114,7 +114,7 @@ OBSAdvAudioCtrl::OBSAdvAudioCtrl(QGridLayout *, obs_source_t *source_)
 	}
 
 	percent->setMinimum(0);
-	percent->setMaximum(2000);
+	percent->setMaximum(200);
 	percent->setSuffix("%");
 	percent->setValue((int)(obs_source_get_volume(source) * 100.0f));
 	percent->setAccessibleName(

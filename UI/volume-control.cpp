@@ -101,8 +101,9 @@ void VolControl::OBSVolumeMuted(void *data, calldata_t *calldata)
 void VolControl::VolumeChanged()
 {
 	slider->blockSignals(true);
-	slider->setValue(
-		(int)(obs_fader_get_deflection(obs_fader) * FADER_PRECISION));
+	blog(LOG_INFO, "VOLUME DB: %f /// %f", obs_fader_get_db(obs_fader),
+	     pow(10.0f, obs_fader_get_db(obs_fader) / 20.0f) * 100);
+	slider->setValue(pow(10.0f, obs_fader_get_db(obs_fader) / 20.0f) * 100);
 	slider->blockSignals(false);
 
 	updateText();
@@ -178,7 +179,12 @@ void VolControl::SliderChanged(int vol)
 {
 	float prev = obs_source_get_volume(source);
 
-	obs_fader_set_deflection(obs_fader, float(vol) / FADER_PRECISION);
+	float newVol = 20.0f * log10((float)vol / 100.0f);
+	if (vol == 0) {
+		newVol = -100.0f;
+	}
+
+	obs_fader_set_db(obs_fader, newVol);
 	updateText();
 
 	auto undo_redo = [](const std::string &uuid, float val) {
@@ -372,7 +378,9 @@ VolControl::VolControl(OBSSource source_, bool showConfig, bool vertical)
 	nameLabel->setText(sourceName);
 
 	slider->setMinimum(0);
-	slider->setMaximum(int(FADER_PRECISION));
+	slider->setMaximum(100);
+	slider->setSingleStep(1);
+	slider->setPageStep(5);
 
 	bool muted = obs_source_muted(source);
 	bool unassigned = IsSourceUnassigned(source);
@@ -1417,10 +1425,6 @@ void VolumeMeter::paintEvent(QPaintEvent *event)
 
 	QPainter painter(this);
 
-	// Paint window background color (as widget is opaque)
-	QColor background = palette().color(QPalette::ColorRole::Window);
-	painter.fillRect(event->region().boundingRect(), background);
-
 	if (vertical)
 		height -= METER_PADDING * 2;
 
@@ -1429,6 +1433,11 @@ void VolumeMeter::paintEvent(QPaintEvent *event)
 	if (event->region().boundingRect() != getBarRect()) {
 		if (needLayoutChange())
 			doLayout();
+
+		// Paint window background color (as widget is opaque)
+		QColor background =
+			palette().color(QPalette::ColorRole::Window);
+		painter.fillRect(widgetRect, background);
 
 		if (vertical) {
 			paintVTicks(painter,
