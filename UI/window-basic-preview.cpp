@@ -1852,8 +1852,8 @@ static void DrawStripedLine(float x1, float y1, float x2, float y2,
 	float offX = (x2 - x1) / dist;
 	float offY = (y2 - y1) / dist;
 
+	gs_render_start(true);
 	for (int i = 0, l = ceil(dist / 15); i < l; i++) {
-		gs_render_start(true);
 
 		float xx1 = x1 + i * 15 * offX;
 		float yy1 = y1 + i * 15 * offY;
@@ -1877,15 +1877,19 @@ static void DrawStripedLine(float x1, float y1, float x2, float y2,
 		gs_vertex2f(xx1 + (xSide * (thickness / scale.x)),
 			    yy1 + (ySide * (thickness / scale.y)));
 		gs_vertex2f(dx, dy);
+
+
+		gs_vertex2f(dx, dy);
+		gs_vertex2f(xx1 + (xSide * (thickness / scale.x)),
+			    yy1 + (ySide * (thickness / scale.y)));
 		gs_vertex2f(dx + (xSide * (thickness / scale.x)),
 			    dy + (ySide * (thickness / scale.y)));
-
-		gs_vertbuffer_t *line = gs_render_save();
-
-		gs_load_vertexbuffer(line);
-		gs_draw(GS_TRISTRIP, 0, 0);
-		gs_vertexbuffer_destroy(line);
 	}
+	gs_vertbuffer_t *line = gs_render_save();
+
+	gs_load_vertexbuffer(line);
+	gs_draw(GS_TRIS, 0, 0);
+	gs_vertexbuffer_destroy(line);
 }
 
 static void DrawRect(float thickness, vec2 scale)
