@@ -74,18 +74,14 @@ OBSBasicProperties::OBSBasicProperties(QWidget *parent, OBSSource source_)
 	OBSDataAutoRelease nd_settings = obs_source_get_settings(source);
 	obs_data_apply(oldSettings, nd_settings);
 
-	view = new OBSPropertiesView(
-		nd_settings.Get(), source,
-		(PropertiesReloadCallback)obs_source_properties,
-		(PropertiesUpdateCallback) nullptr, // No special handling required for undo/redo
-		(PropertiesVisualUpdateCb)obs_source_update);
+	view = new OBSPropertiesViewIdian(obs_source_properties(source), nd_settings.Get(), this);
 	view->setMinimumHeight(150);
 
 	ui->propertiesLayout->addWidget(view);
 
 	if (type == OBS_SOURCE_TYPE_TRANSITION) {
-		connect(view, &OBSPropertiesView::PropertiesRefreshed, this,
-			&OBSBasicProperties::AddPreviewButton);
+//		connect(view, &OBSPropertiesView::PropertiesRefreshed, this,
+//			&OBSBasicProperties::AddPreviewButton);
 	}
 
 	view->show();
@@ -159,7 +155,7 @@ OBSBasicProperties::OBSBasicProperties(QWidget *parent, OBSSource source_)
 			direction = true;
 		};
 
-		connect(view, &OBSPropertiesView::Changed, updateCallback);
+		//connect(view, &OBSPropertiesView::Changed, updateCallback);
 
 		ui->preview->show();
 		connect(ui->preview, &OBSQTDisplay::DisplayCreated,
@@ -184,8 +180,8 @@ void OBSBasicProperties::AddPreviewButton()
 {
 	QPushButton *playButton =
 		new QPushButton(QTStr("PreviewTransition"), this);
-	VScrollArea *area = view;
-	area->widget()->layout()->addWidget(playButton);
+	//VScrollArea *area = view;
+	//area->widget()->layout()->addWidget(playButton);
 
 	playButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
@@ -357,17 +353,17 @@ void OBSBasicProperties::on_buttonBox_clicked(QAbstractButton *button)
 		acceptClicked = true;
 		close();
 
-		if (view->DeferUpdate())
-			view->UpdateSettings();
+		//if (view->DeferUpdate())
+		//	view->UpdateSettings();
 
 	} else if (val == QDialogButtonBox::RejectRole) {
 		OBSDataAutoRelease settings = obs_source_get_settings(source);
 		obs_data_clear(settings);
 
-		if (view->DeferUpdate())
+		/*if (view->DeferUpdate())
 			obs_data_apply(settings, oldSettings);
 		else
-			obs_source_update(source, oldSettings);
+			obs_source_update(source, oldSettings);*/
 
 		close();
 
@@ -378,10 +374,10 @@ void OBSBasicProperties::on_buttonBox_clicked(QAbstractButton *button)
 		OBSDataAutoRelease settings = obs_source_get_settings(source);
 		obs_data_clear(settings);
 
-		if (!view->DeferUpdate())
-			obs_source_update(source, nullptr);
+		//if (!view->DeferUpdate())
+		//	obs_source_update(source, nullptr);
 
-		view->ReloadProperties();
+		//view->ReloadProperties();
 	}
 }
 
@@ -532,8 +528,8 @@ bool OBSBasicProperties::ConfirmQuit()
 	switch (button) {
 	case QMessageBox::Save:
 		acceptClicked = true;
-		if (view->DeferUpdate())
-			view->UpdateSettings();
+		//if (view->DeferUpdate())
+		//	view->UpdateSettings();
 		// Do nothing because the settings are already updated
 		break;
 	case QMessageBox::Discard:
