@@ -15,6 +15,9 @@ private:
 	OBSData settings;
 	OBSGroupBox *groupBox;
 
+	QWidget *scrollAreaWidgetContents;
+	QVBoxLayout *scrollContentsLayout;
+
 	void AddProperties(obs_properties_t *props);
 
 	OBSActionBaseClass *CreateProperty(obs_property_t *prop);

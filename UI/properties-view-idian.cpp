@@ -12,7 +12,18 @@ OBSPropertiesViewIdian::OBSPropertiesViewIdian(obs_properties_t *props,
 	groupBox->setTitle("Properties");
 	setWidgetResizable(true);
 	setFrameShape(Shape::NoFrame);
-	setWidget(groupBox);
+
+	scrollAreaWidgetContents = new QWidget();
+	scrollAreaWidgetContents->setObjectName("scrollAreaWidgetContents");
+
+	scrollContentsLayout = new QVBoxLayout(scrollAreaWidgetContents);
+	scrollContentsLayout->setObjectName("scrollContentsLayout");
+	scrollContentsLayout->setContentsMargins(0, 0, 0, 0);
+
+	setWidget(scrollAreaWidgetContents);
+	scrollContentsLayout->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+
+	scrollContentsLayout->addWidget(groupBox);
 	AddProperties(props);
 }
 
