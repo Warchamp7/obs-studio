@@ -24,6 +24,8 @@
 #include "qt-display.hpp"
 #include <obs.hpp>
 
+#include "properties-view-idian.hpp"
+
 class OBSPropertiesView;
 class OBSBasic;
 
@@ -43,7 +45,7 @@ private:
 	OBSSignal renamedSignal;
 	OBSSignal updatePropertiesSignal;
 	OBSData oldSettings;
-	OBSPropertiesView *view;
+	OBSPropertiesViewIdian *view;
 	QDialogButtonBox *buttonBox;
 	QSplitter *windowSplitter;
 

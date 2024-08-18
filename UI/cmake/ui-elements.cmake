@@ -68,6 +68,8 @@ target_sources(
           menu-button.hpp
           mute-checkbox.hpp
           noncheckable-button.hpp
+          properties-view-idian.cpp
+          properties-view-idian.hpp
           remote-text.cpp
           remote-text.hpp
           scene-tree.cpp
