@@ -74,14 +74,15 @@ OBSBasicProperties::OBSBasicProperties(QWidget *parent, OBSSource source_)
 	OBSDataAutoRelease nd_settings = obs_source_get_settings(source);
 	obs_data_apply(oldSettings, nd_settings);
 
-	view = new OBSPropertiesViewIdian(obs_source_properties(source), nd_settings.Get(), this);
+	view = new OBSPropertiesViewIdian(obs_source_properties(source),
+					  nd_settings.Get(), this);
 	view->setMinimumHeight(150);
 
 	ui->propertiesLayout->addWidget(view);
 
 	if (type == OBS_SOURCE_TYPE_TRANSITION) {
-//		connect(view, &OBSPropertiesView::PropertiesRefreshed, this,
-//			&OBSBasicProperties::AddPreviewButton);
+		//		connect(view, &OBSPropertiesView::PropertiesRefreshed, this,
+		//			&OBSBasicProperties::AddPreviewButton);
 	}
 
 	view->show();
