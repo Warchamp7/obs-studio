@@ -661,6 +661,8 @@ QWidget *OBSPropertiesView::AddList(obs_property_t *prop, bool &warning)
 
 	combo->setMaxVisibleItems(40);
 	combo->setToolTip(QT_UTF8(obs_property_long_description(prop)));
+	combo->setSizePolicy(QSizePolicy::MinimumExpanding,
+			     QSizePolicy::Preferred);
 
 	if (format == OBS_COMBO_FORMAT_STRING &&
 	    type == OBS_COMBO_TYPE_EDITABLE) {
@@ -1617,54 +1619,56 @@ void OBSPropertiesView::AddProperty(obs_property_t *property,
 	if (!obs_property_enabled(property))
 		widget->setEnabled(false);
 
-	QWidget *leftWidget = label;
-	if (obs_property_long_description(property) &&
-	    (label || type == OBS_PROPERTY_BOOL)) {
+	QWidget *leftWidget = new QWidget();
+	QWidget *rightWidget = new QWidget();
+	QHBoxLayout *leftLayout = new QHBoxLayout(leftWidget);
+	QHBoxLayout *rightLayout = new QHBoxLayout(rightWidget);
+
+	leftLayout->setContentsMargins(0, 0, 0, 0);
+	leftLayout->setAlignment(Qt::AlignLeft);
+	leftLayout->setSpacing(0);
+
+	rightLayout->setContentsMargins(0, 0, 0, 0);
+	rightLayout->setAlignment(Qt::AlignLeft);
+	rightLayout->setSpacing(0);
+	rightWidget->setSizePolicy(QSizePolicy::MinimumExpanding,
+				   QSizePolicy::Minimum);
+
+	QWidget *helpParent = nullptr;
+
+	if (label) {
+		leftLayout->addWidget(label);
+		helpParent = leftWidget;
+	} else if (type == OBS_PROPERTY_BOOL) {
+		const char *desc = obs_property_description(property);
+
+		QCheckBox *check = qobject_cast<QCheckBox *>(widget);
+		check->setText(desc);
+		check->setToolTip(obs_property_long_description(property));
+#ifdef __APPLE__
+		check->setAttribute(Qt::WA_LayoutUsesWidgetRect);
+#endif
+
+		helpParent = rightWidget;
+	}
+
+	rightLayout->addWidget(widget);
+
+	if (obs_property_long_description(property) && helpParent) {
 		QString file = !obs_frontend_is_theme_dark()
 				       ? ":/res/images/help.svg"
 				       : ":/res/images/help_light.svg";
 
-		QWidget *newWidget = new QWidget();
-		newWidget->setToolTip(obs_property_long_description(property));
+		leftWidget->setToolTip(obs_property_long_description(property));
 
-		QHBoxLayout *boxLayout = new QHBoxLayout(newWidget);
-		boxLayout->setContentsMargins(0, 0, 0, 0);
-		boxLayout->setAlignment(Qt::AlignLeft);
-		boxLayout->setSpacing(0);
-
-		IconLabel *help = new IconLabel(newWidget);
+		IconLabel *help = new IconLabel(helpParent);
 		help->setIcon(QIcon(file));
 		help->setToolTip(obs_property_long_description(property));
 
-		if (label) {
-			boxLayout->addWidget(label);
-			boxLayout->addWidget(help);
-			leftWidget = newWidget;
-		} else if (type == OBS_PROPERTY_BOOL) {
-			const char *desc = obs_property_description(property);
-
-			QCheckBox *check = qobject_cast<QCheckBox *>(widget);
-			check->setText(desc);
-			check->setToolTip(
-				obs_property_long_description(property));
-#ifdef __APPLE__
-			check->setAttribute(Qt::WA_LayoutUsesWidgetRect);
-#endif
-
-			boxLayout->addWidget(check);
-			boxLayout->addWidget(help);
-			widget = newWidget;
-		} else {
-			/* This shouldn't occur because we don't even enter
-			 * the outer if branch if it's neither label nor
-			 * bool. But the properties-view code is a nightmare
-			 * so who knows what happens in the future. */
-			blog(LOG_WARNING,
-			     "[properties-view]: Couldn't add info icon.");
-		}
+		helpParent->layout()->addWidget(help);
 	}
 
-	layout->addRow(leftWidget, widget);
+	layout->addRow(leftWidget, rightWidget);
 
 	if (!lastFocused.empty())
 		if (lastFocused.compare(name) == 0)
