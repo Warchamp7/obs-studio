@@ -2,19 +2,25 @@
 
 #include <QWidget>
 #include "obs.hpp"
+#include "vertical-scroll-area.hpp"
 #include "idian/obs-widgets.hpp"
 
-class OBSPropertiesViewIdian : public OBSPropertiesList {
+class OBSPropertiesViewIdian : public VScrollArea {
 	Q_OBJECT
 public:
-	OBSPropertiesViewIdian(obs_properties_t *props, OBSData settings, QWidget *parent = nullptr);
+	OBSPropertiesViewIdian(obs_properties_t *props, OBSData settings,
+			       QWidget *parent = nullptr);
+
 private:
 	OBSData settings;
+	OBSPropertiesList *list;
 
-	void AddProperty(obs_property_t *prop);
-	void CreateProperties(obs_properties_t *props);
+	void AddProperties(obs_properties_t *props);
 
-	OBSActionBaseClass *AddPropertyBool(obs_property_t *prop);
-	OBSActionBaseClass *AddPropertyInt(obs_property_t *prop);
-	OBSActionBaseClass *AddPropertyNull(obs_property_t *prop);
+	OBSActionBaseClass *CreateProperty(obs_property_t *prop);
+	OBSActionBaseClass *CreatePropertyBool(obs_property_t *prop);
+	OBSActionBaseClass *CreatePropertyInt(obs_property_t *prop);
+	OBSActionBaseClass *CreatePropertyList(obs_property_t *prop);
+	OBSActionBaseClass *CreatePropertyGroup(obs_property_t *prop);
+	OBSActionBaseClass *CreatePropertyNull(obs_property_t *prop);
 };
