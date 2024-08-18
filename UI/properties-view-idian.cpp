@@ -7,14 +7,12 @@ OBSPropertiesViewIdian::OBSPropertiesViewIdian(obs_properties_t *props,
 					       QWidget *parent)
 	: VScrollArea(parent),
 	  settings(settings),
-	  list(new OBSPropertiesList(this))
+	  groupBox(new OBSGroupBox(this))
 {
+	groupBox->setTitle("Properties");
 	setWidgetResizable(true);
 	setFrameShape(Shape::NoFrame);
-	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-	list->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-	setWidget(list);
-
+	setWidget(groupBox);
 	AddProperties(props);
 }
 
@@ -22,7 +20,7 @@ OBSActionBaseClass *
 OBSPropertiesViewIdian::CreatePropertyBool(obs_property_t *prop)
 {
 	const char *name = obs_property_name(prop);
-	OBSActionRow *row = new OBSActionRow(list);
+	OBSActionRow *row = new OBSActionRow();
 	row->setSuffix(new OBSToggleSwitch(obs_data_get_bool(settings, name)));
 	return row;
 }
@@ -37,7 +35,7 @@ OBSPropertiesViewIdian::CreatePropertyInt(obs_property_t *prop)
 	const enum obs_number_type type = obs_property_int_type(prop);
 	const int value = obs_data_get_int(settings, name);
 
-	OBSActionRow *row = new OBSActionRow(list);
+	OBSActionRow *row = new OBSActionRow();
 	// TODO Slider vs Spinbox
 	OBSSpinBox *obsSpinBox = new OBSSpinBox(row);
 	QSpinBox *spinBox = obsSpinBox->spinBox();
@@ -56,7 +54,7 @@ OBSPropertiesViewIdian::CreatePropertyList(obs_property_t *prop)
 	enum obs_combo_type type = obs_property_list_type(prop);
 	enum obs_combo_format format = obs_property_list_format(prop);
 
-	OBSActionRow *row = new OBSActionRow(list);
+	OBSActionRow *row = new OBSActionRow();
 	// TODO: Honor type
 	OBSComboBox *comboBox = new OBSComboBox(row);
 	if (type == OBS_COMBO_TYPE_EDITABLE) {
@@ -75,7 +73,7 @@ OBSActionBaseClass *
 OBSPropertiesViewIdian::CreatePropertyGroup(obs_property_t *prop)
 {
 	OBSCollapsibleContainer *container = new OBSCollapsibleContainer(
-		obs_property_description(prop), list);
+		obs_property_description(prop), nullptr);
 	enum obs_group_type type = obs_property_group_type(prop);
 	if (type == OBS_GROUP_CHECKABLE) {
 		container->setCheckable(true);
@@ -97,7 +95,7 @@ OBSPropertiesViewIdian::CreatePropertyGroup(obs_property_t *prop)
 OBSActionBaseClass *
 OBSPropertiesViewIdian::CreatePropertyNull(obs_property_t *prop)
 {
-	OBSActionRow *row = new OBSActionRow(list);
+	OBSActionRow *row = new OBSActionRow();
 	DStr str;
 	dstr_printf(str, "Unsupported property: %s", obs_property_name(prop));
 	row->setDescription(str->array);
@@ -150,7 +148,7 @@ OBSActionBaseClass *OBSPropertiesViewIdian::CreateProperty(obs_property_t *prop)
 
 void OBSPropertiesViewIdian::AddProperties(obs_properties_t *props)
 {
-	list->clear();
+	groupBox->properties()->clear();
 
 	obs_property_t *prop = obs_properties_first(props);
 
@@ -162,7 +160,7 @@ void OBSPropertiesViewIdian::AddProperties(obs_properties_t *props)
 	do {
 		OBSActionBaseClass *row = CreateProperty(prop);
 		if (row) {
-			list->addRow(row);
+			groupBox->addRow(row);
 		}
 	} while (obs_property_next(&prop));
 }

@@ -13,7 +13,7 @@ public:
 
 private:
 	OBSData settings;
-	OBSPropertiesList *list;
+	OBSGroupBox *groupBox;
 
 	void AddProperties(obs_properties_t *props);
 
