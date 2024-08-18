@@ -32,6 +32,7 @@
 #include <qt-wrappers.hpp>
 #include <plain-text-edit.hpp>
 #include <slider-ignorewheel.hpp>
+#include <icon-label.hpp>
 #include <cstdlib>
 #include <initializer_list>
 #include <obs-data.h>
@@ -1616,32 +1617,31 @@ void OBSPropertiesView::AddProperty(obs_property_t *property,
 	if (!obs_property_enabled(property))
 		widget->setEnabled(false);
 
-	if (obs_property_long_description(property)) {
+	QWidget *leftWidget = label;
+	if (obs_property_long_description(property) &&
+	    (label || type == OBS_PROPERTY_BOOL)) {
 		QString file = !obs_frontend_is_theme_dark()
 				       ? ":/res/images/help.svg"
 				       : ":/res/images/help_light.svg";
+
+		QWidget *newWidget = new QWidget();
+		newWidget->setToolTip(obs_property_long_description(property));
+
+		QHBoxLayout *boxLayout = new QHBoxLayout(newWidget);
+		boxLayout->setContentsMargins(0, 0, 0, 0);
+		boxLayout->setAlignment(Qt::AlignLeft);
+		boxLayout->setSpacing(0);
+
+		IconLabel *help = new IconLabel(newWidget);
+		help->setIcon(QIcon(file));
+		help->setToolTip(obs_property_long_description(property));
+
 		if (label) {
-			QString lStr = "<html>%1 <img src='%2' style=' \
-				vertical-align: bottom;  \
-				' /></html>";
-
-			label->setText(lStr.arg(label->text(), file));
-			label->setToolTip(
-				obs_property_long_description(property));
+			boxLayout->addWidget(label);
+			boxLayout->addWidget(help);
+			leftWidget = newWidget;
 		} else if (type == OBS_PROPERTY_BOOL) {
-
-			QString bStr = "<html> <img src='%1' style=' \
-				vertical-align: bottom;  \
-				' /></html>";
-
 			const char *desc = obs_property_description(property);
-
-			QWidget *newWidget = new QWidget();
-
-			QHBoxLayout *boxLayout = new QHBoxLayout(newWidget);
-			boxLayout->setContentsMargins(0, 0, 0, 0);
-			boxLayout->setAlignment(Qt::AlignLeft);
-			boxLayout->setSpacing(0);
 
 			QCheckBox *check = qobject_cast<QCheckBox *>(widget);
 			check->setText(desc);
@@ -1651,18 +1651,20 @@ void OBSPropertiesView::AddProperty(obs_property_t *property,
 			check->setAttribute(Qt::WA_LayoutUsesWidgetRect);
 #endif
 
-			QLabel *help = new QLabel(check);
-			help->setText(bStr.arg(file));
-			help->setToolTip(
-				obs_property_long_description(property));
-
 			boxLayout->addWidget(check);
 			boxLayout->addWidget(help);
 			widget = newWidget;
+		} else {
+			/* This shouldn't occur because we don't even enter
+			 * the outer if branch if it's neither label nor
+			 * bool. But the properties-view code is a nightmare
+			 * so who knows what happens in the future. */
+			blog(LOG_WARNING,
+			     "[properties-view]: Couldn't add info icon.");
 		}
 	}
 
-	layout->addRow(label, widget);
+	layout->addRow(leftWidget, widget);
 
 	if (!lastFocused.empty())
 		if (lastFocused.compare(name) == 0)
