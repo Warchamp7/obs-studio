@@ -60,7 +60,7 @@ target_sources(
     util/windows/window-helpers.h
 )
 
-target_compile_options(libobs PRIVATE $<$<COMPILE_LANGUAGE:C,CXX>:/EHc->)
+target_compile_options(libobs PRIVATE $<$<COMPILE_LANGUAGE:C,CXX>:/EHc-> /wd4244 /wd4267)
 
 set_source_files_properties(
   obs-win-crash-handler.c
