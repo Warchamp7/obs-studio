@@ -1,0 +1,41 @@
+@OBSThemeMeta {
+    name: 'OLED';
+    id: 'com.obsproject.Yami.OLED';
+    extends: 'com.obsproject.Yami';
+    author: 'Warchamp7';
+    dark: 'true';
+}
+
+@OBSThemeVars {
+  /* OBS Color Palette */
+  --grey1: #404040;
+  --grey2: #383838;
+  --grey3: #383838;
+  --grey4: #202020;
+  --grey5: #202020;
+  --grey6: #181818;
+  --grey7: #000000;
+  --grey8: #000000;
+
+  /* Base Theme Colors */
+    --bg_window: var(--grey7);
+    --bg_base: var(--grey6);
+    --bg_preview: var(--grey8);
+
+    /* Inputs / Controls */
+    --bg_input: var(--grey4);
+    --bg_input_hover: var(--grey3);
+    --bg_input_focus: var(--grey7);
+
+    --spacing_input: var(--spacing_base);
+
+    --button_bg: var(--bg_input);
+    --button_bg_hover: var(--grey3);
+    --button_bg_down: var(--grey7);
+    --button_bg_disabled: var(--grey6);
+
+    --border_color: var(--grey4);
+
+    --highlight: rgb(42,130,218);
+    --highlight_inactive: rgb(25,28,34);
+}
