@@ -198,6 +198,20 @@ static inline void ClearProcessPriority()
 	} while (false)
 #endif
 
+class OBSToolFrame : public QFrame {
+	Q_OBJECT
+
+public:
+	OBSToolFrame(QWidget *parent = nullptr) : QFrame(parent)
+	{
+		setWindowFlag(Qt::Popup, true);
+		setWindowFlag(Qt::FramelessWindowHint, true);
+		setWindowFlag(Qt::WindowStaysOnTopHint, true);
+	}
+
+	void close() { deleteLater(); }
+};
+
 class OBSBasic : public OBSMainWindow {
 	Q_OBJECT
 	Q_PROPERTY(QIcon imageIcon READ GetImageIcon WRITE SetImageIcon DESIGNABLE true)

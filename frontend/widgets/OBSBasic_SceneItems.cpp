@@ -24,6 +24,7 @@
 
 #include <dialogs/NameDialog.hpp>
 #include <dialogs/OBSBasicAdvAudio.hpp>
+#include <dialogs/OBSBasicFilters.hpp>
 #include <dialogs/OBSBasicSourceSelect.hpp>
 #include <utility/item-widget-helpers.hpp>
 
@@ -572,6 +573,46 @@ void OBSBasic::CreateSourcePopupMenu(int idx, bool preview)
 	delete colorWidgetAction;
 	delete colorSelect;
 	delete deinterlaceMenu;
+
+	if (idx != -1) {
+		OBSSceneItem sceneItem = ui->sources->Get(idx);
+		obs_source_t *source = obs_sceneitem_get_source(sceneItem);
+
+		/*QPointer<QMenu> popupContainer = new QMenu(OBSBasic::Get());
+
+		popupContainer->setGeometry(QRect(0, 0, 800, 600));
+		popupContainer->move(QCursor::pos());
+		popupContainer->show();*/
+		QPointer<OBSToolFrame> frame = new OBSToolFrame(this);
+		QPointer<QHBoxLayout> layout = new QHBoxLayout();
+		frame->setLayout(layout);
+		frame->setGeometry(0, 0, 800, 600);
+		layout->setSpacing(0);
+		layout->setContentsMargins(0, 0, 0, 0);
+
+		QPoint adjustedPos = QPoint(QCursor::pos());
+		if (QCursor::pos().x() + frame->width() >
+		    OBSBasic::Get()->geometry().topRight().x()) {
+			adjustedPos.setX(OBSBasic::Get()->geometry().topRight().x() - frame->width());
+		}
+
+		if (QCursor::pos().y() + frame->height() > OBSBasic::Get()->geometry().bottomRight().y()) {
+			adjustedPos.setY(OBSBasic::Get()->geometry().bottomRight().y() - frame->height());
+		}
+		frame->move(adjustedPos);
+
+		QPointer<OBSBasicFilters> filtersDialog = new OBSBasicFilters(this, source);
+
+		layout->addWidget(filtersDialog);
+
+		frame->show();
+		filtersDialog->move(0, 0);
+		filtersDialog->show();
+
+		frame->releaseMouse();
+
+		return;
+	}
 
 	if (preview) {
 		QAction *action =
