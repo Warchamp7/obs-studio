@@ -38,3 +38,9 @@ target_sources(
     dialogs/OBSWhatsNew.cpp
     dialogs/OBSWhatsNew.hpp
 )
+
+option(ENABLE_WIDGET_PLAYGROUND "Enable building custom widget demo window" OFF)
+if(ENABLE_WIDGET_PLAYGROUND)
+  target_compile_definitions(obs PRIVATE ENABLE_WIDGET_PLAYGROUND)
+  target_sources(obs PRIVATE forms/IdianPlayground.ui dialogs/IdianPlayground.hpp dialogs/IdianPlayground.cpp)
+endif()

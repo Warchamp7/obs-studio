@@ -633,6 +633,7 @@ private slots:
 
 	void on_autoConfigure_triggered();
 	void on_stats_triggered();
+	void on_widgetPlayground_triggered();
 
 	void on_resetUI_triggered();
 
@@ -1551,9 +1552,6 @@ private:
 	QScopedPointer<QThread> whatsNewInitThread;
 	QScopedPointer<QThread> updateCheckThread;
 	QScopedPointer<QThread> introCheckThread;
-
-	void TimedCheckForUpdates();
-	void CheckForUpdates(bool manualUpdate);
 
 	void MacBranchesFetched(const QString &branch, bool manualUpdate);
 	void ReceivedIntroJson(const QString &text);

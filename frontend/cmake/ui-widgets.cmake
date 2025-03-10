@@ -64,3 +64,22 @@ target_sources(
     widgets/VolumeMeter.cpp
     widgets/VolumeMeter.hpp
 )
+
+target_sources(
+  obs
+  PRIVATE widgets/idian/obs-actionrow.hpp
+          widgets/idian/obs-checkbox.hpp
+          widgets/idian/obs-combobox.hpp
+          widgets/idian/obs-controls.hpp
+          widgets/idian/obs-groupbox.hpp
+          widgets/idian/obs-propertieslist.hpp
+          widgets/idian/obs-toggleswitch.hpp
+          widgets/idian/obs-widgets.hpp
+          widgets/idian/obs-widgets-base.hpp
+          widgets/idian/obs-actionrow.cpp
+          widgets/idian/obs-checkbox.cpp
+          widgets/idian/obs-combobox.cpp
+          widgets/idian/obs-controls.cpp
+          widgets/idian/obs-groupbox.cpp
+          widgets/idian/obs-propertieslist.cpp
+          widgets/idian/obs-toggleswitch.cpp)

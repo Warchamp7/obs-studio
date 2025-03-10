@@ -49,6 +49,9 @@
 #ifdef ENABLE_WAYLAND
 #include <obs-nix-platform.h>
 #endif
+#ifdef ENABLE_WIDGET_PLAYGROUND
+#include "dialogs/IdianPlayground.hpp"
+#endif
 #include <qt-wrappers.hpp>
 
 #include <QActionGroup>
@@ -403,6 +406,10 @@ OBSBasic::OBSBasic(QWidget *parent) : OBSMainWindow(parent), undo_s(ui), ui(new 
 
 #ifdef __linux__
 	ui->actionE_xit->setShortcut(Qt::CTRL | Qt::Key_Q);
+#endif
+
+#ifndef ENABLE_WIDGET_PLAYGROUND
+	ui->widgetPlayground->setVisible(false);
 #endif
 
 	auto addNudge = [this](const QKeySequence &seq, MoveDir direction, int distance) {
@@ -1807,6 +1814,16 @@ void OBSBasic::GetConfigFPS(uint32_t &num, uint32_t &den) const
 config_t *OBSBasic::Config() const
 {
 	return activeConfiguration;
+}
+
+void OBSBasic::on_widgetPlayground_triggered()
+{
+#ifdef ENABLE_WIDGET_PLAYGROUND
+	IdianPlayground playground(this);
+	playground.setModal(true);
+	playground.show();
+	playground.exec();
+#endif
 }
 
 void OBSBasic::UpdateEditMenu()
