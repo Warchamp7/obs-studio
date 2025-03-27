@@ -168,8 +168,6 @@ void OBSBasic::UpdateContextBar(bool force)
 		const char *id = obs_source_get_unversioned_id(source);
 		uint32_t flags = obs_source_get_output_flags(source);
 
-		ui->sourceInteractButton->setVisible(flags & OBS_SOURCE_INTERACTION);
-
 		if (contextBarSize >= ContextBarSize_Reduced && (updateNeeded || force)) {
 			ClearContextBar();
 			if (flags & OBS_SOURCE_CONTROLLABLE_MEDIA) {
@@ -243,25 +241,38 @@ void OBSBasic::UpdateContextBar(bool force)
 		else
 			icon = GetSourceIcon(id);
 
+		ui->contextContainer->setEnabled(true);
+
 		QPixmap pixmap = icon.pixmap(QSize(16, 16));
 		ui->contextSourceIcon->setPixmap(pixmap);
-		ui->contextSourceIconSpacer->hide();
 		ui->contextSourceIcon->show();
 
 		const char *name = obs_source_get_name(source);
 		ui->contextSourceLabel->setText(name);
+		ui->contextSourceLabel->setAlignment(Qt::AlignLeft);
+
+		ui->emptySpace->show();
+
+		ui->contextExtraButtonsContainer->setVisible(flags & OBS_SOURCE_INTERACTION);
 
 		ui->sourceFiltersButton->setEnabled(true);
 		ui->sourcePropertiesButton->setEnabled(obs_source_configurable(source));
+		ui->contextButtonsContainer->show();
 	} else {
 		ClearContextBar();
+		ui->contextContainer->setEnabled(false);
 		ui->contextSourceIcon->hide();
-		ui->contextSourceIconSpacer->show();
+		ui->contextSourceLabel->setAlignment(Qt::AlignHCenter);
 		ui->contextSourceLabel->setText(QTStr("ContextBar.NoSelectedSource"));
+
+		ui->emptySpace->hide();
+
+		ui->sourceInteractButton->setEnabled(false);
+		ui->contextExtraButtonsContainer->hide();
 
 		ui->sourceFiltersButton->setEnabled(false);
 		ui->sourcePropertiesButton->setEnabled(false);
-		ui->sourceInteractButton->setVisible(false);
+		ui->contextButtonsContainer->hide();
 	}
 
 	if (contextBarSize == ContextBarSize_Normal) {

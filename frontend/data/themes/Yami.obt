@@ -159,6 +159,8 @@
     --input_height: calc(var(--input_height_base) - calc(var(--input_padding) * 2));
     --input_height_half: calc(var(--input_height_base) / 2);
 
+    --context_height: calc(var(--input_height) + calc(var(--input_padding) * 4));
+
     --input_bg: var(--grey4);
     --input_bg_hover: var(--grey7);
     --input_bg_focus: var(--grey7);
@@ -790,29 +792,6 @@ QScrollBar::handle:horizontal {
 QScrollBar::handle:disabled {
     background: transparent;
     border-color: transparent;
-}
-
-/* Source Context Bar */
-
-#contextContainer {
-    background-color: var(--bg_base);
-    margin-top: 4px;
-    border-radius: var(--border_radius);
-}
-
-#contextContainer QPushButton {
-    padding-left: 12px;
-    padding-right: 12px;
-}
-
-QPushButton#sourcePropertiesButton {
-    qproperty-icon: url(theme:Dark/settings/general.svg);
-    icon-size: var(--icon_base);
-}
-
-QPushButton#sourceFiltersButton {
-    qproperty-icon: url(theme:Dark/filter.svg);
-    icon-size: var(--icon_base);
 }
 
 /* Scenes and Sources toolbar */
@@ -1711,6 +1690,115 @@ OBSHotkeyWidget QPushButton {
     margin-left: var(--spacing_base);
 }
 
+/* Source Context Bar */
+
+.context-container {
+    background-color: var(--bg_base);
+    margin-top: 4px;
+    border-radius: var(--border_radius);
+    min-height: var(--context_height);
+    max-height: var(--context_height);
+    padding: 0px;
+    border: 1px solid var(--border_color);
+}
+
+.context-container QPushButton {
+    background: var(--grey6);
+    border-color: transparent;
+    padding: var(--padding_xlarge) var(--padding_xlarge);
+    margin: var(--spacing_base);
+    font-weight: bold;
+    outline: none;
+    icon-size: 16px;
+}
+
+.context-container QPushButton:focus {
+    border: 1px solid var(--grey1);
+}
+
+.context-container QPushButton:hover {
+    background: var(--button_bg_hover);
+    border-color: var(--grey1);
+}
+
+.context-container QPushButton:pressed,
+.context-container QPushButton:pressed:hover {
+    background-color: var(--button_bg_down);
+}
+
+.context-container QComboBox,
+.context-container QLineEdit {
+    padding: var(--padding_xlarge) var(--padding_xlarge);
+    margin: var(--spacing_base) 0px;
+    max-width: 400px;
+}
+
+.context-container QComboBox {
+    background-color: transparent;
+    border-color: transparent;
+    margin: var(--spacing_base);
+}
+
+.context-container QComboBox::drop-down {
+    border: none;
+    padding-right: var(--padding_large);
+}
+
+.context-container QComboBox:hover {
+    background-color: var(--grey5);
+    border-color: var(--input_border_hover);
+}
+
+.context-container QComboBox:on {
+    background-color: var(--input_bg_focus);
+}
+
+.context-container QLineEdit {
+    background: var(--grey5);
+}
+
+.context-container QLineEdit:hover {
+    background-color: var(--input_bg_hover);
+}
+
+.context-container QLineEdit[readOnly="true"] {
+    background: transparent;
+    border-color: var(--border_color);
+}
+
+.context-container QLabel {
+    color: var(--text_muted);
+}
+
+.context-frame {
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--border_color);
+}
+
+.context-padding {
+    padding: 0 var(--padding_large);
+}
+
+.context-last {
+    border: none;
+}
+
+#GameCaptureToolbar #windowLabel {
+    border-left: 1px solid var(--border_color);
+}
+
+#GameCaptureToolbar #mode {
+    margin-right: var(--spacing_base);
+}
+
+#colorPreview {
+    border-radius: var(--border_radius);
+    padding: 0 var(--padding_wide);
+    margin: var(--spacing_base);
+    font-weight: bold;
+    qproperty-icon: url(theme:Dark/sources/brush.svg);
+}
 
 /* Sources List Group Collapse Checkbox */
 
