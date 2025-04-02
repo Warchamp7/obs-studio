@@ -15,7 +15,7 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
-    <number>1</number>
+    <number>0</number>
    </property>
    <property name="leftMargin">
     <number>0</number>
@@ -30,20 +30,46 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QPushButton" name="choose">
-     <property name="text">
-      <string>Basic.PropertiesWindow.SelectColor</string>
+    <widget class="QFrame" name="frame">
+     <property name="frameShape">
+      <enum>QFrame::Shape::NoFrame</enum>
      </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="colorPreview">
-     <property name="text">
-      <string notr="true">[Color Preview]</string>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Plain</enum>
      </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+     <property name="lineWidth">
+      <number>0</number>
      </property>
+     <property name="class" stdset="0">
+      <string>context-frame</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QPushButton" name="colorPreview">
+        <property name="text">
+         <string notr="true">[ColorPreview]</string>
+        </property>
+        <property name="class" stdset="0">
+         <string>context-button color-button icon-edit</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>
@@ -61,6 +87,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../obs.qrc"/>
+ </resources>
  <connections/>
 </ui>

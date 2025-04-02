@@ -332,7 +332,7 @@
        </size>
       </property>
       <property name="class" stdset="0">
-       <string>context-container</string>
+       <string>context-bar</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_10">
        <property name="spacing">
@@ -396,7 +396,7 @@
              <bool>false</bool>
             </property>
             <property name="class" stdset="0">
-             <string notr="true">icon-gear</string>
+             <string notr="true">context-button icon-gear</string>
             </property>
            </widget>
           </item>
@@ -416,7 +416,7 @@
              <bool>false</bool>
             </property>
             <property name="class" stdset="0">
-             <string>icon-filter</string>
+             <string>context-button icon-filter</string>
             </property>
            </widget>
           </item>
@@ -456,7 +456,7 @@
              <set>Qt::AlignmentFlag::AlignCenter</set>
             </property>
             <property name="class" stdset="0">
-             <string>context-padding</string>
+             <string>context-padding </string>
             </property>
            </widget>
           </item>
@@ -466,7 +466,7 @@
              <string>TextLabel</string>
             </property>
             <property name="class" stdset="0">
-             <string>context-padding</string>
+             <string>context-padding text-muted</string>
             </property>
            </widget>
           </item>
@@ -474,7 +474,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QFrame" name="emptySpace">
+        <widget class="QFrame" name="contextControlsContainer">
          <property name="sizePolicy">
           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -485,7 +485,7 @@
           <number>0</number>
          </property>
          <property name="class" stdset="0">
-          <string notr="true">context-frame</string>
+          <string notr="true"/>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <property name="spacing">
@@ -552,7 +552,7 @@
              <bool>false</bool>
             </property>
             <property name="class" stdset="0">
-             <string>icon-touch</string>
+             <string>context-button icon-touch</string>
             </property>
            </widget>
           </item>

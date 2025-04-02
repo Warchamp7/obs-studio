@@ -158,6 +158,7 @@
     --input_padding: var(--padding_large);
     --input_height: calc(var(--input_height_base) - calc(var(--input_padding) * 2));
     --input_height_half: calc(var(--input_height_base) / 2);
+    --input_width: calc(var(--input_height_base) + calc(var(--input_padding) * 2));
 
     --context_height: calc(var(--input_height) + calc(var(--input_padding) * 4));
 
@@ -352,6 +353,10 @@
 
 .icon-save {
     qproperty-icon: url(theme:Dark/save.svg);
+}
+
+.icon-edit {
+    qproperty-icon: url(theme:Dark/edit.svg);
 }
 
 /* Media icons */
@@ -989,6 +994,7 @@ QDoubleSpinBox {
     background-color: var(--input_bg);
     border: 1px solid var(--input_bg);
     border-radius: var(--border_radius);
+    min-width: var(--input_width);
     padding: var(--input_padding) 0px var(--input_padding) var(--input_padding);
     padding-left: 8px;
     max-height: var(--input_height);
@@ -1692,7 +1698,7 @@ OBSHotkeyWidget QPushButton {
 
 /* Source Context Bar */
 
-.context-container {
+.context-bar {
     background-color: var(--bg_base);
     margin-top: 4px;
     border-radius: var(--border_radius);
@@ -1702,102 +1708,92 @@ OBSHotkeyWidget QPushButton {
     border: 1px solid var(--border_color);
 }
 
-.context-container QPushButton {
-    background: var(--grey6);
-    border-color: transparent;
-    padding: var(--padding_xlarge) var(--padding_xlarge);
-    margin: var(--spacing_base);
-    font-weight: bold;
-    outline: none;
-    icon-size: 16px;
-}
-
-.context-container QPushButton:focus {
-    border: 1px solid var(--grey1);
-}
-
-.context-container QPushButton:hover {
-    background: var(--button_bg_hover);
-    border-color: var(--grey1);
-}
-
-.context-container QPushButton:pressed,
-.context-container QPushButton:pressed:hover {
-    background-color: var(--button_bg_down);
-}
-
-.context-container QComboBox,
-.context-container QLineEdit {
-    padding: var(--padding_xlarge) var(--padding_xlarge);
-    margin: var(--spacing_base) 0px;
-    max-width: 400px;
-}
-
-.context-container QComboBox {
-    background-color: transparent;
-    border-color: transparent;
-    margin: var(--spacing_base);
-}
-
-.context-container QComboBox::drop-down {
-    border: none;
-    padding-right: var(--padding_large);
-}
-
-.context-container QComboBox:hover {
-    background-color: var(--grey5);
-    border-color: var(--input_border_hover);
-}
-
-.context-container QComboBox:on {
-    background-color: var(--input_bg_focus);
-}
-
-.context-container QLineEdit {
-    background: var(--grey5);
-}
-
-.context-container QLineEdit:hover {
-    background-color: var(--input_bg_hover);
-}
-
-.context-container QLineEdit[readOnly="true"] {
-    background: transparent;
-    border-color: var(--border_color);
-}
-
-.context-container QLabel {
-    color: var(--text_muted);
-}
-
 .context-frame {
     background: transparent;
     border: none;
     border-right: 1px solid var(--border_color);
+    margin-left: var(--spacing_base);
 }
 
 .context-padding {
     padding: 0 var(--padding_large);
 }
 
-.context-last {
-    border: none;
-}
-
-#GameCaptureToolbar #windowLabel {
-    border-left: 1px solid var(--border_color);
-}
-
-#GameCaptureToolbar #mode {
+.context-bar .context-button {
+    background: var(--grey6);
+    background: var(--grey6);
+    border-color: transparent;
+    padding: var(--padding_xlarge) var(--padding_xlarge);
+    margin: var(--spacing_base) 0;
     margin-right: var(--spacing_base);
+    font-weight: bold;
+    outline: none;
+    icon-size: 16px;
 }
 
-#colorPreview {
-    border-radius: var(--border_radius);
-    padding: 0 var(--padding_wide);
+.context-button:focus {
+    border: 1px solid var(--grey1);
+}
+
+.context-button:hover {
+    background: var(--button_bg_hover);
+    border-color: var(--grey1);
+}
+
+.context-button:pressed,
+.context-button:pressed:hover {
+    background-color: var(--button_bg_down);
+}
+
+.context-combobox,
+.context-lineedit {
+    padding: var(--padding_xlarge) var(--padding_xlarge);
     margin: var(--spacing_base);
+    max-width: 400px;
+}
+
+.context-combobox {
+    background-color: transparent;
+    border-color: transparent;
+}
+
+.context-combobox::drop-down {
+    border: none;
+    padding-right: var(--padding_large);
+}
+
+.context-combobox:hover {
+    background-color: var(--grey5);
+    border-color: var(--input_border_hover);
+}
+
+.context-combobox:on {
+    background-color: var(--input_bg_focus);
+}
+
+.context-lineedit {
+    background: var(--grey5);
+}
+
+.context-lineedit:hover {
+    background-color: var(--input_bg_hover);
+}
+
+.context-lineedit[readOnly="true"] {
+    background: transparent;
+    border-color: var(--border_color);
+}
+
+.context-label {
+    color: var(--text_muted);
+    padding: 0 var(--padding_xlarge);
+}
+
+.context-bar .color-button {
+    border-radius: var(--border_radius);
+    padding: var(--padding_xlarge) var(--padding_wide);
+    margin: var(--spacing_base) 0;
     font-weight: bold;
-    qproperty-icon: url(theme:Dark/sources/brush.svg);
 }
 
 /* Sources List Group Collapse Checkbox */

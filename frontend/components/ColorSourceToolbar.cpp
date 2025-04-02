@@ -38,7 +38,6 @@ ColorSourceToolbar::~ColorSourceToolbar() {}
 void ColorSourceToolbar::UpdateColor()
 {
 	QPalette palette = QPalette(color);
-	ui->colorPreview->setFrameStyle(QFrame::NoFrame | QFrame::Plain);
 	ui->colorPreview->setText(color.name(QColor::HexRgb));
 	ui->colorPreview->setPalette(palette);
 	ui->colorPreview->setStyleSheet(QString("background-color :%1; color: %2;")
@@ -51,7 +50,7 @@ void ColorSourceToolbar::UpdateColor()
 	ui->colorPreview->style()->polish(ui->colorPreview);
 }
 
-void ColorSourceToolbar::on_choose_clicked()
+void ColorSourceToolbar::on_colorPreview_clicked()
 {
 	OBSSource source = GetSource();
 	if (!source) {
