@@ -530,6 +530,7 @@ QListWidget::item,
 QMenu::item {
     border-radius: var(--border_radius);
     color: var(--text);
+    border: 1px solid transparent;
 }
 
 SourceTreeItem {
@@ -541,6 +542,7 @@ QMenu::item:selected,
 QListView::item:selected,
 QListWidget::item:selected {
     background-color: var(--primary);
+    border-color: var(--primary);
 }
 
 QMenu::item:hover,
@@ -550,6 +552,7 @@ QMenu::item:selected:hover,
 QListView::item:selected:hover,
 QListWidget::item:selected:hover {
     background-color: var(--primary_light);
+    border-color: var(--primary_light);
     color: var(--text);
 }
 
@@ -559,14 +562,15 @@ QListWidget::item:focus,
 QMenu::item:selected:focus,
 QListView::item:selected:focus,
 QListWidget::item:selected:focus {
-    border: 1px solid var(--border_highlight);
+    border-color: var(--border_highlight);
 }
 
 QListView::item:disabled,
 QListView::item:disabled:hover,
 QListWidget::item:disabled,
 QListWidget::item:disabled:hover {
-    background: transparent;
+    background-color: transparent;
+    border-color: transparent;
     color: var(--text_disabled);
 }
 
