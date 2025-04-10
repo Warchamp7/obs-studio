@@ -139,6 +139,13 @@ void OBSBasic::on_resetDocks_triggered(bool force)
 	resizeDocks(docks, sizes, Qt::Horizontal);
 
 	activateWindow();
+
+	/* Re-arrange docks */
+	splitDockWidget(ui->previewDock, ui->scenesDock, Qt::Vertical);
+	splitDockWidget(ui->scenesDock, ui->mixerDock, Qt::Horizontal);
+	splitDockWidget(ui->scenesDock, ui->sourcesDock, Qt::Horizontal);
+	splitDockWidget(ui->mixerDock, ui->transitionsDock, Qt::Horizontal);
+	splitDockWidget(ui->transitionsDock, controlsDock, Qt::Horizontal);
 }
 
 void OBSBasic::on_lockDocks_toggled(bool lock)
