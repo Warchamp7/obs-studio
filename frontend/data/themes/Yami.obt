@@ -2060,3 +2060,84 @@ OBSBasicAdvAudio #scrollAreaWidgetContents {
 #previewZoomOutButton:focus {
     border: 1px solid var(--input_border_hover);
 }
+
+QMenuBar {
+    min-height: var(--input_height);
+}
+
+#centralwidget {
+    background: var(--grey6);
+    height: var(--input_height);
+    min-height: var(--input_height);
+    max-height: var(--input_height);
+    padding: var(--padding_xlarge) var(--padding_base);
+    border-top: 1px solid var(--border_color);
+    border-bottom: 1px solid var(--border_color);
+}
+
+#centralwidget QComboBox {
+    background-color: transparent;
+    padding: var(--padding_large) var(--padding_wide);
+    border: none;
+}
+
+#centralwidget .output-button {
+    background-color: var(--primary_darker);
+    border-color: var(--primary_dark);
+    padding: var(--padding_large) var(--padding_wide);
+    font-weight: bold;
+    border-radius: var(--border_radius);
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+#centralwidget .output-settings {
+    background-color: var(--primary_darker);
+    border-color: var(--primary_dark);
+    margin-right: var(--padding_xlarge);
+    border-left: none;
+    padding: var(--padding_large) var(--padding_xlarge);
+    border-radius: var(--border_radius);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    qproperty-icon: url(theme:Dark/collapse.svg);
+}
+
+#centralwidget QPushButton:hover {
+    background-color: var(--primary);
+}
+
+#centralwidget QPushButton:pressed {
+    background-color: var(--primary_darker);
+}
+
+#centralwidget #pushButton,
+#centralwidget #pushButton_6 {
+    background-color: var(--red3);
+    border-color: var(--red1);
+}
+
+#centralwidget #pushButton_3 {
+    qproperty-icon: url(theme:Dark/settings/output.svg);
+}
+
+#centralwidget #pushButton_8 {
+    qproperty-icon: url(theme:Dark/settings/general.svg);
+}
+
+#centralwidget #pushButton_4,
+#centralwidget #pushButton_5 {
+    background-color: var(--grey6);
+    border: none;
+    padding: var(--padding_xlarge);
+}
+
+#centralwidget #pushButton_4 {
+    min-height: 22px;
+    margin: 0;
+    border-radius: 0px;
+    margin-left: 0px;
+    border-left: 1px solid var(--border_color);
+    border-right: 1px solid var(--border_color);
+    padding-left: var(--padding_xlarge);
+}
