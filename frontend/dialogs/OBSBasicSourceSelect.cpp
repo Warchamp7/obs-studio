@@ -338,6 +338,7 @@ void OBSBasicSourceSelect::getSourceTypes()
 	ui->sourceTypeList->insertItem(0, allSources);
 
 	ui->sourceTypeList->setCurrentItem(allSources);
+	ui->sourceTypeList->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 	// ui->sourceTypeList->setFocus();
 
 	connect(ui->sourceTypeList, &QListWidget::currentItemChanged, this, &OBSBasicSourceSelect::sourceTypeSelected);
@@ -499,8 +500,8 @@ void OBSBasicSourceSelect::createNewSource()
 
 void OBSBasicSourceSelect::on_createNewSource_clicked(bool checked)
 {
-	createNewSource();
 	UNUSED_PARAMETER(checked);
+	createNewSource();
 }
 
 void OBSBasicSourceSelect::addExistingSource()
@@ -551,6 +552,7 @@ void OBSBasicSourceSelect::addExistingSource()
 
 void OBSBasicSourceSelect::sourceTypeSelected(QListWidgetItem *current, QListWidgetItem *previous)
 {
+	UNUSED_PARAMETER(previous);
 	setSelectedSourceType(current);
 }
 

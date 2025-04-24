@@ -99,12 +99,16 @@ QString SourceSelectButton::text()
 
 void SourceSelectButton::resizeEvent(QResizeEvent *event)
 {
+	UNUSED_PARAMETER(event);
+
 	button->setFixedSize(width(), height());
 	button->move(0, 0);
 }
 
 void SourceSelectButton::moveEvent(QMoveEvent *event)
 {
+	UNUSED_PARAMETER(event);
+
 	button->setFixedSize(width(), height());
 	button->move(0, 0);
 }
