@@ -561,7 +561,7 @@ void OBSBasicSourceSelect::sourceTypeClicked(QListWidgetItem *clicked)
 	setSelectedSourceType(clicked);
 
 	QVariant type = clicked->data(SourceTypeRoles::UNVERSIONED_ID);
-	if (type != NULL) {
+	if (!type.isNull()) {
 		ui->lineEdit->setFocus();
 	}
 }
