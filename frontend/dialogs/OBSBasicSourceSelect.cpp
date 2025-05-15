@@ -199,7 +199,7 @@ OBSBasicSourceSelect::OBSBasicSourceSelect(OBSBasic *parent, undo_stack &undo_s)
 	getSourceTypes();
 	getSources();
 
-	updateExistingSources(12);
+	updateExistingSources(16);
 
 	connect(ui->lineEdit, &QLineEdit::returnPressed, this, &OBSBasicSourceSelect::createNewSource);
 	connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
@@ -361,7 +361,7 @@ void OBSBasicSourceSelect::setSelectedSourceType(QListWidgetItem *item)
 		setSelectedSource(nullptr);
 		sourceTypeId.clear();
 		ui->createNewFrame->setVisible(false);
-		updateExistingSources(8);
+		updateExistingSources(16);
 		return;
 	}
 

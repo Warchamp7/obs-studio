@@ -52,32 +52,34 @@ SourceSelectButton::SourceSelectButton(obs_source_t *source_, QWidget *parent) :
 	label->setAttribute(Qt::WA_TransparentForMouseEvents);
 	label->setObjectName("name");
 
-	if (hasVideo) {
-		QFrame *thumbnail = new QFrame(this);
-		// OBSSourceWidget *thumbnail = new OBSSourceWidget(this);
-		// thumbnail->setSource(source);
-		thumbnail->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-		thumbnail->setAttribute(Qt::WA_TransparentForMouseEvents);
-		thumbnail->setObjectName("thumbnail");
-		thumbnail->setMinimumSize(160, 90);
-		thumbnail->setMaximumSize(160, 90);
+	/*
+	QFrame *thumbnail = new QFrame(this);
+	// OBSSourceWidget *thumbnail = new OBSSourceWidget(this);
+	// thumbnail->setSource(source);
+	thumbnail->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+	thumbnail->setAttribute(Qt::WA_TransparentForMouseEvents);
+	thumbnail->setObjectName("thumbnail");
+	thumbnail->setMinimumSize(160, 90);
+	thumbnail->setMaximumSize(160, 90);
+	*/
 
-		layout->addWidget(thumbnail);
+	QLabel *image = new QLabel(this);
+	image->setObjectName("thumbnail");
+	image->setMinimumSize(160, 90);
+	image->setMaximumSize(160, 90);
+	image->setAlignment(Qt::AlignCenter);
+
+	QPixmap pixmap = main->thumbnailManager->getThumbnail(source);
+	if (!pixmap.isNull()) {
+		image->setPixmap(pixmap.scaled(160, 90, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 	} else {
-		QLabel *thumbnail = new QLabel();
-		thumbnail->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-		thumbnail->setAttribute(Qt::WA_TransparentForMouseEvents);
-		thumbnail->setObjectName("thumbnail");
-		thumbnail->setMinimumSize(160, 90);
-		thumbnail->setMaximumSize(160, 90);
-		thumbnail->setAlignment(Qt::AlignCenter);
-
 		QIcon icon;
 		icon = main->GetSourceIcon(id);
 
-		thumbnail->setPixmap(icon.pixmap(45, 45));
-		layout->addWidget(thumbnail);
+		image->setPixmap(icon.pixmap(45, 45));
 	}
+
+	layout->addWidget(image);
 
 	layout->addWidget(label);
 
