@@ -14,6 +14,8 @@ class OBSQTDisplay : public QWidget {
 	OBSDisplay display;
 	bool destroying = false;
 
+	bool render = true;
+
 	virtual void paintEvent(QPaintEvent *event) override;
 	virtual void moveEvent(QMoveEvent *event) override;
 	virtual void resizeEvent(QResizeEvent *event) override;
@@ -45,4 +47,11 @@ public:
 
 	void OnMove();
 	void OnDisplayChange();
+
+	void setRender(bool render_) {
+		render = render_;
+		if (display) {
+			obs_display_set_enabled(display, render);
+		}
+	}
 };

@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>1000</width>
-    <height>614</height>
+    <height>464</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -89,7 +89,7 @@
          <bool>true</bool>
         </property>
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -133,12 +133,6 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>460</height>
-            </size>
-           </property>
            <property name="accessibleName">
             <string>Basic.SourceSelect.SelectType</string>
            </property>
@@ -152,7 +146,7 @@
             <number>0</number>
            </property>
            <property name="sizeAdjustPolicy">
-            <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContentsOnFirstShow</enum>
+            <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
            </property>
            <property name="editTriggers">
             <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
@@ -328,11 +322,11 @@
                     <x>0</x>
                     <y>0</y>
                     <width>800</width>
-                    <height>510</height>
+                    <height>360</height>
                    </rect>
                   </property>
                   <property name="autoFillBackground">
-                   <bool>false</bool>
+                   <bool>true</bool>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_4">
                    <property name="spacing">

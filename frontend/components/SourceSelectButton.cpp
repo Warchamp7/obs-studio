@@ -54,13 +54,21 @@ SourceSelectButton::SourceSelectButton(obs_source_t *source_, QWidget *parent) :
 
 	if (hasVideo) {
 		QFrame *thumbnail = new QFrame(this);
-		// OBSSourceWidget *thumbnail = new OBSSourceWidget(this);
-		// thumbnail->setSource(source);
 		thumbnail->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 		thumbnail->setAttribute(Qt::WA_TransparentForMouseEvents);
 		thumbnail->setObjectName("thumbnail");
-		thumbnail->setMinimumSize(160, 90);
-		thumbnail->setMaximumSize(160, 90);
+		thumbnail->setBaseSize(160, 90);
+
+		QHBoxLayout *thumbLayout = new QHBoxLayout();
+		thumbLayout->setContentsMargins(0, 0, 0, 0);
+		thumbLayout->setSpacing(0);
+		thumbnail->setLayout(thumbLayout);
+
+		OBSSourceWidget *preview = new OBSSourceWidget(this);
+		preview->setMinimumSize(160, 90);
+		preview->setSource(source);
+		preview->setFixedAspectRatio(16.0f / 9.0f);
+		thumbLayout->addWidget(preview);
 
 		layout->addWidget(thumbnail);
 	} else {

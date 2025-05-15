@@ -2130,10 +2130,8 @@ SourceSelectButton QLabel {
 }
 
 SourceSelectButton #thumbnail {
-    background: var(--grey6);
+    background: var(--bg_preview);
     border: 1px solid var(--grey4);
-    min-width: 160px;
-    min-height: 90px;
     padding: 0;
     margin-top: var(--spacing_base);
 }

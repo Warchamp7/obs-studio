@@ -17,13 +17,16 @@
 
 #include "OBSBasicSourceSelect.hpp"
 
-#include <QMessageBox>
+#include <QListWidget>
 #include <QList>
+#include <QMessageBox>
 
 #include "qt-wrappers.hpp"
 #include "OBSApp.hpp"
 
 #include "moc_OBSBasicSourceSelect.cpp"
+
+#define SOURCE_SELECT_RECENT_ITEMS 32
 
 struct AddSourceData {
 	/* Input data */
@@ -199,7 +202,7 @@ OBSBasicSourceSelect::OBSBasicSourceSelect(OBSBasic *parent, undo_stack &undo_s)
 	getSourceTypes();
 	getSources();
 
-	updateExistingSources(12);
+	updateExistingSources(SOURCE_SELECT_RECENT_ITEMS);
 
 	connect(ui->lineEdit, &QLineEdit::returnPressed, this, &OBSBasicSourceSelect::createNewSource);
 	connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
@@ -207,6 +210,8 @@ OBSBasicSourceSelect::OBSBasicSourceSelect(OBSBasic *parent, undo_stack &undo_s)
 	connect(ui->addExistingButton, &QAbstractButton::clicked, this, &OBSBasicSourceSelect::addExistingSource);
 
 	App()->DisableHotkeys();
+
+	resize(width(), ui->sourceTypeList->sizeHintForRow(0) * (ui->sourceTypeList->count() + 2));
 }
 
 OBSBasicSourceSelect::~OBSBasicSourceSelect()
@@ -219,6 +224,7 @@ void OBSBasicSourceSelect::getSources()
 	sources.clear();
 
 	obs_enum_sources(enumSourcesCallback, this);
+	std::reverse(sources.begin(), sources.end());
 	emit sourcesUpdated();
 }
 
@@ -302,6 +308,8 @@ void OBSBasicSourceSelect::getSourceTypes()
 
 	size_t idx = 0;
 
+	QListWidget *deprecatedTypes = new QListWidget();
+
 	while (obs_enum_input_types2(idx++, &type, &unversioned_type)) {
 		const char *name = obs_source_get_display_name(type);
 		uint32_t caps = obs_get_source_output_flags(type);
@@ -317,20 +325,32 @@ void OBSBasicSourceSelect::getSourceTypes()
 		icon = main->GetSourceIcon(type);
 		newItem->setIcon(icon);
 
-		ui->sourceTypeList->addItem(newItem);
+		if ((caps & OBS_SOURCE_DEPRECATED) != 0) {
+			deprecatedTypes->addItem(newItem);
+		} else {
+			ui->sourceTypeList->addItem(newItem);
+		}
 	}
 
-	QListWidgetItem *newItem = new QListWidgetItem();
-	newItem->setData(Qt::DisplayRole, Str("Basic.Scene"));
-	newItem->setData(SourceTypeRoles::UNVERSIONED_ID, "scene");
-
-	QIcon icon;
-	icon = main->GetSceneIcon();
-	newItem->setIcon(icon);
-
-	ui->sourceTypeList->addItem(newItem);
+	QListWidgetItem *sceneType = new QListWidgetItem();
+	sceneType->setData(Qt::DisplayRole, Str("Basic.Scene"));
+	sceneType->setData(SourceTypeRoles::UNVERSIONED_ID, "scene");
+	sceneType->setIcon(main->GetSceneIcon());
+	ui->sourceTypeList->addItem(sceneType);
 
 	ui->sourceTypeList->sortItems();
+
+	// Add deprecated types after others
+	deprecatedTypes->sortItems();
+
+	QListWidgetItem *deprecatedLabel = new QListWidgetItem();
+	deprecatedLabel->setData(Qt::DisplayRole, "Deprecated");
+	deprecatedLabel->setFlags(Qt::NoItemFlags);
+	ui->sourceTypeList->addItem(deprecatedLabel);
+
+	while (QListWidgetItem *child = deprecatedTypes->takeItem(0)) {
+		ui->sourceTypeList->addItem(child);
+	}
 
 	QListWidgetItem *allSources = new QListWidgetItem();
 	allSources->setData(Qt::DisplayRole, "All Sources");
@@ -338,10 +358,12 @@ void OBSBasicSourceSelect::getSourceTypes()
 	ui->sourceTypeList->insertItem(0, allSources);
 
 	ui->sourceTypeList->setCurrentItem(allSources);
-	ui->sourceTypeList->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+
 	// ui->sourceTypeList->setFocus();
 
 	connect(ui->sourceTypeList, &QListWidget::currentItemChanged, this, &OBSBasicSourceSelect::sourceTypeSelected);
+
+	delete deprecatedTypes;
 }
 
 void OBSBasicSourceSelect::setSelectedSourceType(QListWidgetItem *item)
@@ -351,8 +373,8 @@ void OBSBasicSourceSelect::setSelectedSourceType(QListWidgetItem *item)
 	// Clear existing buttons when switching types
 	QLayoutItem *child = nullptr;
 	while ((child = layout->takeAt(0)) != nullptr) {
-		delete child->widget();
-		delete child;
+		child->widget()->deleteLater();
+		layout->removeItem(child);
 	}
 
 	QVariant data = item->data(SourceTypeRoles::UNVERSIONED_ID);
@@ -361,7 +383,7 @@ void OBSBasicSourceSelect::setSelectedSourceType(QListWidgetItem *item)
 		setSelectedSource(nullptr);
 		sourceTypeId.clear();
 		ui->createNewFrame->setVisible(false);
-		updateExistingSources(8);
+		updateExistingSources(SOURCE_SELECT_RECENT_ITEMS);
 		return;
 	}
 

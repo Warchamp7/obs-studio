@@ -17,7 +17,7 @@
 
 #pragma once
 
-// #include <widgets/OBSSourceWidget.hpp>
+#include <widgets/OBSSourceWidget.hpp>
 
 #include <QPushButton>
 #include <QLabel>
@@ -46,7 +46,7 @@ private:
 	QVBoxLayout *layout = nullptr;
 	QLabel *label = nullptr;
 
-	// OBSSourceWidget *sourceWidget;
+	OBSSourceWidget *sourceWidget;
 
 private slots:
 };
