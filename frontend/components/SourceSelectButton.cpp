@@ -65,6 +65,7 @@ SourceSelectButton::SourceSelectButton(obs_source_t *source_, QWidget *parent) :
 
 	QLabel *image = new QLabel(this);
 	image->setObjectName("thumbnail");
+	image->setAttribute(Qt::WA_TransparentForMouseEvents);
 	image->setMinimumSize(160, 90);
 	image->setMaximumSize(160, 90);
 	image->setAlignment(Qt::AlignCenter);

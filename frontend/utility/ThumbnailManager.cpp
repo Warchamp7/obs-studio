@@ -20,6 +20,8 @@
 
 #include <QImageWriter>
 
+#define UPDATE_INTERVAL 100
+
 ThumbnailManager::ThumbnailManager()
 {
 	texrender = gs_texrender_create(GS_RGBA, GS_ZS_NONE);
@@ -28,19 +30,16 @@ ThumbnailManager::ThumbnailManager()
 	sigs.emplace_back(sh, "source_create", obsSourceAdded, this);
 	sigs.emplace_back(sh, "source_remove", obsSourceRemoved, this);
 
-	sigs.emplace_back(sh, "source_activate", obsSourceActivated, this);
-	sigs.emplace_back(sh, "source_deactivate", obsSourceDeactivated, this);
-
 	updateTimer = new QTimer();
 	connect(updateTimer, &QTimer::timeout, this, &ThumbnailManager::updateTick);
-	updateTimer->start(200);
+	updateTimer->start(UPDATE_INTERVAL);
 }
 
 ThumbnailManager::~ThumbnailManager() {}
 
 QPixmap ThumbnailManager::getThumbnail(OBSSource source)
 {
-	const char *uuid = obs_source_get_uuid(source);
+	std::string uuid = obs_source_get_uuid(source);
 
 	if (thumbnails.find(uuid) != thumbnails.end()) {
 		return thumbnails[uuid].pixmap;
@@ -63,32 +62,16 @@ void ThumbnailManager::obsSourceRemoved(void *param, calldata_t *calldata)
 	QMetaObject::invokeMethod(static_cast<ThumbnailManager *>(param), "sourceRemoved", Q_ARG(OBSSource, source));
 }
 
-void ThumbnailManager::obsSourceActivated(void *param, calldata_t *calldata)
-{
-	OBSSource source((obs_source_t *)calldata_ptr(calldata, "source"));
-
-	QMetaObject::invokeMethod(static_cast<ThumbnailManager *>(param), "sourceActivated", Q_ARG(OBSSource, source));
-}
-
-void ThumbnailManager::obsSourceDeactivated(void *param, calldata_t *calldata)
-{
-	OBSSource source((obs_source_t *)calldata_ptr(calldata, "source"));
-
-	QMetaObject::invokeMethod(static_cast<ThumbnailManager *>(param), "sourceDeactivated",
-				  Q_ARG(OBSSource, source));
-}
-
 void ThumbnailManager::sourceAdded(OBSSource source)
 {
 	const char *name = obs_source_get_name(source);
 	blog(LOG_INFO, "[ThumbnailManager] Add source '%s' to thumbnails list", name);
 
-	obs_weak_source_t *weak = obs_source_get_weak_source(source);
-
 	// Add new entry to list
-	ThumbnailItem newEntry = {weak, 0, false, false, QPixmap()};
+	std::string uuid = obs_source_get_uuid(source);
+	ThumbnailItem newEntry = {uuid, {}, QPixmap()};
 
-	thumbnails.insert({obs_source_get_uuid(source), newEntry});
+	thumbnails.insert({uuid, newEntry});
 }
 
 void ThumbnailManager::sourceRemoved(OBSSource source)
@@ -96,31 +79,9 @@ void ThumbnailManager::sourceRemoved(OBSSource source)
 	const char *name = obs_source_get_name(source);
 	blog(LOG_INFO, "[ThumbnailManager] Remove source '%s' from thumbnails list", name);
 
-	const char *uuid = obs_source_get_uuid(source);
+	std::string uuid = obs_source_get_uuid(source);
 	if (thumbnails.find(uuid) != thumbnails.end()) {
-		thumbnails[uuid].removed = true;
-	}
-}
-
-void ThumbnailManager::sourceActivated(OBSSource source)
-{
-	const char *name = obs_source_get_name(source);
-	blog(LOG_INFO, "[ThumbnailManager] Set '%s' as active", name);
-
-	const char *uuid = obs_source_get_uuid(source);
-	if (thumbnails.find(uuid) != thumbnails.end()) {
-		thumbnails[uuid].active = true;
-	}
-}
-
-void ThumbnailManager::sourceDeactivated(OBSSource source)
-{
-	const char *name = obs_source_get_name(source);
-	blog(LOG_INFO, "[ThumbnailManager] Set '%s' as inactive", name);
-
-	const char *uuid = obs_source_get_uuid(source);
-	if (thumbnails.find(uuid) != thumbnails.end()) {
-		thumbnails[uuid].active = false;
+		thumbnails.erase(uuid);
 	}
 }
 
@@ -130,70 +91,91 @@ void ThumbnailManager::updateTick()
 		return;
 	}
 
-	const char *uuid;
+	std::string uuid;
 	ThumbnailItem item;
 
-	while (updateIterator != thumbnails.end()) {
-		uuid = updateIterator->first;
-		item = updateIterator->second;
+	bool doUpdate = false;
 
-		if (item.removed) {
-			blog(LOG_INFO, "[ThumbnailManager] Advancing past removed source");
+	auto steadyNow = steady_clock::now();
 
-			std::advance(updateIterator, 1);
+	for (auto &entry : thumbnails) {
+		uuid = entry.first;
+		item = entry.second;
+
+		OBSSourceAutoRelease source = obs_get_source_by_uuid(item.uuid.c_str());
+		if (!source) {
 			thumbnails.erase(uuid);
 			continue;
 		}
 
-		if (!item.source) {
-			break;
-		}
+		const char *name = obs_source_get_name(source);
 
-		OBSSourceAutoRelease source = obs_weak_source_get_source(item.source);
-
-		if (!source) {
-			std::advance(updateIterator, 1);
-			continue;
-		}
-
+		bool isShowing = obs_source_showing(source);
 		uint32_t flags = obs_source_get_output_flags(source);
 
-		time_t now = std::time(0);
-		bool updatedRecently = std::time(0) - item.lastUpdate < 5;
+		bool updatedRecently = false;
+		long long lastUpdateDuration = 0;
 
-		if ((flags & OBS_SOURCE_VIDEO) == 0 || updatedRecently) {
-			std::advance(updateIterator, 1);
+		long long previewOutOfDate = std::max((long long)(5000 + (UPDATE_INTERVAL * thumbnails.size())), 30LL * 1000);
+
+		if (item.lastUpdate) {
+			lastUpdateDuration = duration_cast<milliseconds>(steadyNow - *item.lastUpdate).count();
+			if (lastUpdateDuration < previewOutOfDate) {
+				updatedRecently = true;
+			}
+		}
+
+		if ((flags & OBS_SOURCE_VIDEO) == 0) {
 			continue;
-		} else if (!item.active) {
+		}
+
+		if (!item.lastUpdate.has_value()) {
+			// Force update previews for newly added entries
+			blog(LOG_INFO, "[ThumbnailManager] Update source with no update yet '%s'", name);
+
+			doUpdate = true;
+			break;
+		} else if (!updatedRecently) {
 			const char *id = obs_source_get_unversioned_id(source);
 
-			// Always update previews for scenes even when not active
-			if (strcmp(id, "scene") == 0) {
+			if (isShowing) {
+				blog(LOG_INFO,
+				     "[ThumbnailManager] Source '%s' last updated %.2f seconds ago. Limit: %.2fs", name,
+				     (float)lastUpdateDuration / 1000, (float)previewOutOfDate / 1000);
+
+				doUpdate = true;
 				break;
-			} else if (item.lastUpdate == 0) {
+			} else if (strcmp(id, "scene") == 0) {
+				// Always update previews for scenes even when not active
+				blog(LOG_INFO,
+				     "[ThumbnailManager] Scene '%s' last updated %.2f seconds ago. Limit: %.2fs", name,
+				     (float)lastUpdateDuration / 1000, (float)previewOutOfDate / 1000);
+
+				doUpdate = true;
 				break;
-			} else {
-				std::advance(updateIterator, 1);
-				continue;
 			}
-		} else {
-			break;
 		}
 	}
 
-	if (updateIterator == thumbnails.end()) {
-		updateIterator = thumbnails.begin();
+	if (!doUpdate) {
 		return;
 	}
 
-	if (!item.source) {
-		return;
+	QPixmap pixmap = generateThumbnail(texrender, item.uuid, !item.lastUpdate.has_value());
+	if (!pixmap.isNull()) {
+		thumbnails[uuid].pixmap = pixmap;
+		thumbnails[uuid].lastUpdate = steadyNow;
 	}
+}
 
-	OBSSourceAutoRelease source = obs_weak_source_get_source(item.source);
+QPixmap ThumbnailManager::generateThumbnail(gs_texrender_t *texrender, std::string uuid, bool forceShow)
+{
+	QPixmap pixmap;
 
-	const char *name = obs_source_get_name(source);
-	blog(LOG_INFO, "[ThumbnailManager] Update thumbnail for %s", name);
+	OBSSourceAutoRelease source = obs_get_source_by_uuid(uuid.c_str());
+	if (!source) {
+		return pixmap;
+	}
 
 	obs_enter_graphics();
 
@@ -202,7 +184,10 @@ void ThumbnailManager::updateTick()
 
 	gs_texrender_reset(texrender);
 	if (gs_texrender_begin(texrender, width, height)) {
-		vec4 clear_color = {0.0f, 0.0f, 0.0f, 1.0f}; // RGBA
+		vec4 clear_color = {0.0f, 0.0f, 0.0f, 0.0f};
+		if (!obs_source_showing(source)) {
+			clear_color = {0.0f, 0.0f, 0.0f, 0.5f};
+		}
 		gs_clear(GS_CLEAR_COLOR, &clear_color, 1.0f, 0);
 
 		int x, y;
@@ -223,8 +208,7 @@ void ThumbnailManager::updateTick()
 		gs_ortho(0.0f, float(sourceCX), 0.0f, float(sourceCY), -100.0f, 100.0f);
 		gs_set_viewport(x, y, newCX, newCY);
 
-		if (item.lastUpdate == 0) {
-			// Force render for sources with no preview yet
+		if (forceShow) {
 			obs_source_inc_showing(source);
 			obs_source_video_render(source);
 			obs_source_dec_showing(source);
@@ -238,7 +222,6 @@ void ThumbnailManager::updateTick()
 		gs_texrender_end(texrender);
 	};
 
-	QPixmap pixmap;
 	gs_texture_t *tex = gs_texrender_get_texture(texrender);
 	if (tex) {
 		gs_stagesurf_t *stage = gs_stagesurface_create(width, height, GS_RGBA);
@@ -261,9 +244,5 @@ void ThumbnailManager::updateTick()
 	}
 	obs_leave_graphics();
 
-	if (!pixmap.isNull()) {
-		blog(LOG_INFO, "[ThumbnailManager] Update tick success");
-		thumbnails[uuid].pixmap = pixmap;
-		thumbnails[uuid].lastUpdate = std::time(0);
-	}
+	return pixmap;
 }

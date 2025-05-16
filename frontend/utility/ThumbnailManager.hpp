@@ -23,11 +23,11 @@
 #include <QPixmap>
 #include <QTimer>
 
+using namespace std::chrono;
+
 struct ThumbnailItem {
-	OBSWeakSource source;
-	time_t lastUpdate;
-	bool active;
-	bool removed;
+	std::string uuid;
+	std::optional<steady_clock::time_point> lastUpdate;
 	QPixmap pixmap;
 };
 
@@ -41,8 +41,7 @@ public:
 	QPixmap getThumbnail(OBSSource source);
 
 private:
-	std::unordered_map<const char *, ThumbnailItem> thumbnails;
-	std::unordered_map<const char *, ThumbnailItem>::iterator updateIterator = thumbnails.begin();
+	std::unordered_map<std::string, ThumbnailItem> thumbnails;
 
 	QTimer *updateTimer;
 
@@ -50,17 +49,14 @@ private:
 
 	static void obsSourceAdded(void *param, calldata_t *calldata);
 	static void obsSourceRemoved(void *param, calldata_t *calldata);
-	static void obsSourceActivated(void *param, calldata_t *calldata);
-	static void obsSourceDeactivated(void *param, calldata_t *calldata);
 
 	void updateTick();
 
 	gs_texrender_t *texrender;
 
+	static QPixmap generateThumbnail(gs_texrender_t *texrender, std::string uuid, bool forceShow);
+
 public slots:
 	void sourceAdded(OBSSource source);
 	void sourceRemoved(OBSSource source);
-
-	void sourceActivated(OBSSource source);
-	void sourceDeactivated(OBSSource source);
 };
