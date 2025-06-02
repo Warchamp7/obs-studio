@@ -12,4 +12,8 @@ target_sources(
     settings/OBSHotkeyLabel.hpp
     settings/OBSHotkeyWidget.cpp
     settings/OBSHotkeyWidget.hpp
+    settings/SettingsManager.cpp
+    settings/SettingsManager.hpp
+    settings/SettingsWindow.cpp
+    settings/SettingsWindow.hpp
 )
