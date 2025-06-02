@@ -22,6 +22,7 @@
 
 #include <OBSApp.hpp>
 #include <oauth/Auth.hpp>
+#include <settings/SettingsManager.hpp>
 #include <utility/BasicOutputHandler.hpp>
 #include <utility/OBSCanvas.hpp>
 #include <utility/VCamConfig.hpp>
@@ -299,10 +300,15 @@ private:
 	// TODO: Remove, orphaned instance method
 	void LoadProject();
 
+	void initSettingsManager();
+	SettingsManager *settingsManager_;
+
 public slots:
 	void UpdatePatronJson(const QString &text, const QString &error);
 	void UpdateEditMenu();
 	void applicationShutdown() noexcept;
+
+	void openNewSettings();
 
 public:
 	/* `undo_s` needs to be declared after `ui` to prevent an uninitialized
@@ -326,6 +332,8 @@ public:
 	void SetDisplayAffinity(QWindow *window);
 
 	inline bool Closing() { return closing; }
+
+	SettingsManager *settingsManager() { return settingsManager_; }
 
 protected:
 	virtual void closeEvent(QCloseEvent *event) override;

@@ -245,6 +245,8 @@ OBSBasic::OBSBasic(QWidget *parent) : OBSMainWindow(parent), undo_s(ui), ui(new 
 	ui->setupUi(this);
 	ui->previewDisabledWidget->setVisible(false);
 
+	initSettingsManager();
+
 	/* Set up streaming connections */
 	connect(
 		this, &OBSBasic::StreamingStarting, this, [this] { this->streamingStarting = true; },
@@ -1897,6 +1899,20 @@ void OBSBasic::GetConfigFPS(uint32_t &num, uint32_t &den) const
 config_t *OBSBasic::Config() const
 {
 	return activeConfiguration;
+}
+
+void OBSBasic::initSettingsManager()
+{
+	settingsManager_ = new SettingsManager();
+
+	SettingsPage *testPage = new SettingsPage("test", "Test Page");
+	settingsManager()->registerPage(testPage);
+
+	SettingsPage *testPage2 = new SettingsPage("test2", "Test Page 2");
+	settingsManager()->registerPage(testPage2);
+
+	AppearancePage *appearancePage = new AppearancePage("appearance", "Appearance");
+	settingsManager()->registerPage(appearancePage);
 }
 
 void OBSBasic::UpdateEditMenu()

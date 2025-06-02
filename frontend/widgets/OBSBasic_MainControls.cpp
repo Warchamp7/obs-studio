@@ -36,6 +36,7 @@
 #endif
 #include <dialogs/OBSRemux.hpp>
 #include <settings/OBSBasicSettings.hpp>
+#include <settings/SettingsWindow.hpp>
 #ifdef _WIN32
 #include <utility/AutoUpdateThread.hpp>
 #endif
@@ -182,6 +183,12 @@ void OBSBasic::on_actionRemux_triggered()
 	remuxDlg = new OBSRemux(path, this);
 	remuxDlg->show();
 	remux = remuxDlg;
+}
+
+void OBSBasic::openNewSettings()
+{
+	SettingsWindow *settingsWindow = new SettingsWindow(this);
+	settingsWindow->show();
 }
 
 void OBSBasic::on_action_Settings_triggered()
