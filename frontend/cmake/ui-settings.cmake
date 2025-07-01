@@ -1,6 +1,20 @@
 target_sources(
   obs-studio
   PRIVATE
+    settings/AbstractSettingsSection.cpp
+    settings/AbstractSettingsSection.hpp
+    settings/AccessibilitySection.cpp
+    settings/AccessibilitySection.hpp
+    settings/AdvancedSection.cpp
+    settings/AdvancedSection.hpp
+    settings/AppearanceSection.cpp
+    settings/AppearanceSection.hpp
+    settings/AudioSection.cpp
+    settings/AudioSection.hpp
+    settings/GeneralSection.cpp
+    settings/GeneralSection.hpp
+    settings/HotkeySection.cpp
+    settings/HotkeySection.hpp
     settings/OBSBasicSettings_A11y.cpp
     settings/OBSBasicSettings_Appearance.cpp
     settings/OBSBasicSettings_Stream.cpp
@@ -12,8 +26,16 @@ target_sources(
     settings/OBSHotkeyLabel.hpp
     settings/OBSHotkeyWidget.cpp
     settings/OBSHotkeyWidget.hpp
+    settings/OutputSection.cpp
+    settings/OutputSection.hpp
+    settings/SettingsItemObserver.cpp
+    settings/SettingsItemObserver.hpp
     settings/SettingsManager.cpp
     settings/SettingsManager.hpp
     settings/SettingsWindow.cpp
     settings/SettingsWindow.hpp
+    settings/StreamSection.cpp
+    settings/StreamSection.hpp
+    settings/VideoSection.cpp
+    settings/VideoSection.hpp
 )

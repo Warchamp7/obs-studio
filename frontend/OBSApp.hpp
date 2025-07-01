@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <settings/SettingsManager.hpp>
+#include <settings/SettingsWindow.hpp>
 #include <utility/OBSTheme.hpp>
 #include <widgets/OBSMainWindow.hpp>
 
@@ -75,6 +77,10 @@ private:
 
 	bool UpdatePre22MultiviewLayout(const char *layout);
 
+	void initSettingsManager();
+	SettingsManager *settingsManager = nullptr;
+	QPointer<SettingsWindow> settingsWindow;
+
 	bool InitGlobalConfig();
 	bool InitGlobalConfigDefaults();
 	bool InitGlobalLocationDefaults();
@@ -123,6 +129,9 @@ public:
 	inline bool HotkeysEnabledInFocus() const { return enableHotkeysInFocus; }
 
 	inline QMainWindow *GetMainWindow() const { return mainWindow.data(); }
+
+	SettingsManager *getSettingsManager() const { return settingsManager; }
+	void openSettingsWindow(QWidget *parent);
 
 	inline config_t *GetAppConfig() const { return appConfig; }
 	inline config_t *GetUserConfig() const { return userConfig; }

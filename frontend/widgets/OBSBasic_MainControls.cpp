@@ -182,8 +182,7 @@ void OBSBasic::on_actionRemux_triggered()
 
 void OBSBasic::openNewSettings()
 {
-	SettingsWindow *settingsWindow = new SettingsWindow(this);
-	settingsWindow->show();
+	App()->openSettingsWindow(this);
 }
 
 void OBSBasic::on_action_Settings_triggered()

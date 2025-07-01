@@ -1,0 +1,804 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GeneralPage</class>
+ <widget class="QWidget" name="GeneralPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>795</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QScrollArea" name="scrollArea_2">
+     <property name="frameShape">
+      <enum>QFrame::Shape::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Plain</enum>
+     </property>
+     <property name="lineWidth">
+      <number>0</number>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents_2">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>778</width>
+        <height>1260</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_19">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QFrame" name="widget_2">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_20">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QGroupBox" name="groupBox_15">
+            <property name="title">
+             <string>Basic.Settings.General</string>
+            </property>
+            <layout class="QFormLayout" name="formLayout_32">
+             <property name="fieldGrowthPolicy">
+              <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
+             </property>
+             <property name="labelAlignment">
+              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+             <property name="topMargin">
+              <number>2</number>
+             </property>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>Basic.Settings.General.Language</string>
+               </property>
+               <property name="buddy">
+                <cstring>language</cstring>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="language"/>
+             </item>
+             <item row="1" column="0">
+              <spacer name="horizontalSpacer_3">
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Policy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>170</width>
+                 <height>5</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="1" column="1">
+              <widget class="QCheckBox" name="openStatsOnStartup">
+               <property name="text">
+                <string>Basic.Settings.General.OpenStatsOnStartup</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QCheckBox" name="hideOBSFromCapture">
+               <property name="toolTip">
+                <string>Basic.Settings.General.HideOBSWindowsFromCapture.Tooltip</string>
+               </property>
+               <property name="text">
+                <string>Basic.Settings.General.HideOBSWindowsFromCapture</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="updateSettingsGroupBox">
+            <property name="title">
+             <string>Basic.Settings.General.Updater</string>
+            </property>
+            <layout class="QFormLayout" name="formLayout_20">
+             <property name="fieldGrowthPolicy">
+              <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
+             </property>
+             <property name="labelAlignment">
+              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+             <property name="topMargin">
+              <number>2</number>
+             </property>
+             <item row="0" column="0">
+              <widget class="QLabel" name="updateChannelLabel">
+               <property name="text">
+                <string>Basic.Settings.General.UpdateChannel</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="updateChannelBox">
+               <property name="editable">
+                <bool>false</bool>
+               </property>
+               <property name="currentText">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QCheckBox" name="enableAutoUpdates">
+               <property name="text">
+                <string>Basic.Settings.General.EnableAutoUpdates</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <spacer name="horizontalSpacer_29">
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Policy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>170</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_16">
+            <property name="title">
+             <string>Basic.Settings.Output</string>
+            </property>
+            <layout class="QFormLayout" name="formLayout_2">
+             <property name="fieldGrowthPolicy">
+              <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
+             </property>
+             <property name="labelAlignment">
+              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+             <property name="topMargin">
+              <number>2</number>
+             </property>
+             <item row="0" column="0">
+              <spacer name="horizontalSpacer_5">
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Policy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>170</width>
+                 <height>5</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="0" column="1">
+              <widget class="QCheckBox" name="warnBeforeStreamStart">
+               <property name="text">
+                <string>Basic.Settings.General.WarnBeforeStartingStream</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QCheckBox" name="warnBeforeStreamStop">
+               <property name="text">
+                <string>Basic.Settings.General.WarnBeforeStoppingStream</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QCheckBox" name="warnBeforeRecordStop">
+               <property name="text">
+                <string>Basic.Settings.General.WarnBeforeStoppingRecord</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QCheckBox" name="recordWhenStreaming">
+               <property name="text">
+                <string>Basic.Settings.General.RecordWhenStreaming</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QCheckBox" name="keepRecordStreamStops">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>Basic.Settings.General.RecordWhenStreaming</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
+              <widget class="QCheckBox" name="replayWhileStreaming">
+               <property name="text">
+                <string>Basic.Settings.General.ReplayBufferWhileStreaming</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="1">
+              <widget class="QCheckBox" name="keepReplayStreamStops">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>Basic.Settings.General.KeepReplayBufferStreamStops</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_10">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="title">
+             <string>Basic.Settings.General.Snapping</string>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+            <layout class="QFormLayout" name="formLayout_21">
+             <property name="fieldGrowthPolicy">
+              <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
+             </property>
+             <property name="labelAlignment">
+              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+             <property name="topMargin">
+              <number>2</number>
+             </property>
+             <item row="0" column="1">
+              <widget class="QCheckBox" name="snappingEnabled">
+               <property name="accessibleName">
+                <string>Basic.Settings.General.Snapping</string>
+               </property>
+               <property name="text">
+                <string>Enable</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QCheckBox" name="screenSnapping">
+               <property name="text">
+                <string>Basic.Settings.General.ScreenSnapping</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QCheckBox" name="centerSnapping">
+               <property name="text">
+                <string>Basic.Settings.General.CenterSnapping</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QCheckBox" name="sourceSnapping">
+               <property name="text">
+                <string>Basic.Settings.General.SourceSnapping</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QDoubleSpinBox" name="snapDistance">
+               <property name="decimals">
+                <number>1</number>
+               </property>
+               <property name="singleStep">
+                <double>0.500000000000000</double>
+               </property>
+               <property name="value">
+                <double>10.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_9">
+               <property name="text">
+                <string>Basic.Settings.General.SnapDistance</string>
+               </property>
+               <property name="buddy">
+                <cstring>snapDistance</cstring>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <spacer name="horizontalSpacer_4">
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Policy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>170</width>
+                 <height>5</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_14">
+            <property name="title">
+             <string>Basic.Settings.General.Projectors</string>
+            </property>
+            <layout class="QFormLayout" name="formLayout_28">
+             <property name="fieldGrowthPolicy">
+              <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
+             </property>
+             <property name="labelAlignment">
+              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+             <property name="topMargin">
+              <number>2</number>
+             </property>
+             <item row="0" column="1">
+              <widget class="QCheckBox" name="hideProjectorCursor">
+               <property name="text">
+                <string>Basic.Settings.General.HideProjectorCursor</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QCheckBox" name="projectorAlwaysOnTop">
+               <property name="text">
+                <string>Basic.Settings.General.ProjectorAlwaysOnTop</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QCheckBox" name="saveProjectors">
+               <property name="text">
+                <string>Basic.Settings.General.SaveProjectors</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QCheckBox" name="closeProjectors">
+               <property name="text">
+                <string>Basic.Settings.General.CloseExistingProjectors</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Policy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>170</width>
+                 <height>5</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_13">
+            <property name="title">
+             <string>Basic.Settings.General.SysTray</string>
+            </property>
+            <layout class="QFormLayout" name="formLayout_29">
+             <property name="fieldGrowthPolicy">
+              <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
+             </property>
+             <property name="labelAlignment">
+              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+             <property name="topMargin">
+              <number>2</number>
+             </property>
+             <item row="0" column="1">
+              <widget class="QCheckBox" name="systemTrayEnabled">
+               <property name="accessibleName">
+                <string>Basic.Settings.General.SysTray</string>
+               </property>
+               <property name="text">
+                <string>Enable</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QCheckBox" name="systemTrayWhenStarted">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>Basic.Settings.General.SysTrayWhenStarted</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QCheckBox" name="systemTrayAlways">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>Basic.Settings.General.SystemTrayHideMinimize</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Policy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>170</width>
+                 <height>5</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_18">
+            <property name="title">
+             <string>StudioMode.Preview</string>
+            </property>
+            <layout class="QFormLayout" name="formLayout_35">
+             <property name="fieldGrowthPolicy">
+              <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
+             </property>
+             <property name="labelAlignment">
+              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+             <property name="topMargin">
+              <number>2</number>
+             </property>
+             <item row="1" column="1">
+              <widget class="QCheckBox" name="overflowAlwaysVisible">
+               <property name="text">
+                <string>Basic.Settings.General.OverflowAlwaysVisible</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <spacer name="horizontalSpacer_25">
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>170</width>
+                 <height>5</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="2" column="1">
+              <widget class="QCheckBox" name="overflowSelectionHide">
+               <property name="text">
+                <string>Basic.Settings.General.OverflowSelectionHidden</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QCheckBox" name="previewSafeAreas">
+               <property name="text">
+                <string>Basic.Settings.General.Multiview.DrawSafeAreas</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QCheckBox" name="previewSpacingHelpers">
+               <property name="text">
+                <string>Basic.Settings.General.SpacingHelpers</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QCheckBox" name="overflowHide">
+               <property name="text">
+                <string>Basic.Settings.General.OverflowHidden</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_19">
+            <property name="title">
+             <string>Basic.Settings.General.Importers</string>
+            </property>
+            <layout class="QFormLayout" name="formLayout_36">
+             <property name="fieldGrowthPolicy">
+              <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
+             </property>
+             <property name="labelAlignment">
+              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+             <property name="topMargin">
+              <number>2</number>
+             </property>
+             <item row="0" column="0">
+              <spacer name="horizontalSpacer_26">
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>170</width>
+                 <height>5</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="0" column="1">
+              <widget class="QCheckBox" name="automaticSearch">
+               <property name="text">
+                <string>Basic.Settings.General.AutomaticCollectionSearch</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_11">
+            <property name="title">
+             <string>Basic.TogglePreviewProgramMode</string>
+            </property>
+            <layout class="QFormLayout" name="formLayout_31">
+             <property name="fieldGrowthPolicy">
+              <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
+             </property>
+             <property name="labelAlignment">
+              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+             <property name="topMargin">
+              <number>2</number>
+             </property>
+             <item row="0" column="1">
+              <widget class="QCheckBox" name="doubleClickSwitch">
+               <property name="text">
+                <string>Basic.Settings.General.SwitchOnDoubleClick</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <spacer name="horizontalSpacer_6">
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>170</width>
+                 <height>5</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="1" column="1">
+              <widget class="QCheckBox" name="studioPortraitLayout">
+               <property name="text">
+                <string>Basic.Settings.General.StudioPortraitLayout</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QCheckBox" name="prevProgLabelToggle">
+               <property name="text">
+                <string>Basic.Settings.General.TogglePreviewProgramLabels</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBoxMultiview">
+            <property name="title">
+             <string>Basic.Settings.General.Multiview</string>
+            </property>
+            <layout class="QFormLayout" name="formLayoutMultiview">
+             <property name="fieldGrowthPolicy">
+              <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
+             </property>
+             <property name="labelAlignment">
+              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+             </property>
+             <property name="topMargin">
+              <number>2</number>
+             </property>
+             <item row="0" column="0">
+              <spacer name="horizontalSpacerMultiview">
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Policy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>170</width>
+                 <height>5</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="0" column="1">
+              <widget class="QCheckBox" name="multiviewMouseSwitch">
+               <property name="text">
+                <string>Basic.Settings.General.Multiview.MouseSwitch</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QCheckBox" name="multiviewDrawNames">
+               <property name="text">
+                <string>Basic.Settings.General.Multiview.DrawSourceNames</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QCheckBox" name="multiviewDrawAreas">
+               <property name="text">
+                <string>Basic.Settings.General.Multiview.DrawSafeAreas</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QComboBox" name="multiviewLayout"/>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_64">
+               <property name="text">
+                <string>Basic.Settings.General.MultiviewLayout</string>
+               </property>
+               <property name="buddy">
+                <cstring>multiviewLayout</cstring>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_11">
+            <property name="orientation">
+             <enum>Qt::Orientation::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>10</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

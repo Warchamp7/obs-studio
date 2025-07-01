@@ -21,36 +21,55 @@
 
 #include <settings/SettingsManager.hpp>
 
+#include <QLabel>
 #include <QPointer>
+#include <QPushButton>
 
 class OBSBasic;
 class SettingsWindow : public QDialog {
 	Q_OBJECT
 
-private:
 	OBSBasic *main;
 	SettingsManager *settingsManager;
 
 	std::unique_ptr<Ui::SettingsWindow> ui;
+	QPointer<QLabel> restartNotice;
 
-	inline void EnableApplyButton(bool enable)
-	{
-		// ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(enable);
-	}
+	enum DataRole { SettingsSectionRole = Qt::UserRole + 1 };
 
-private slots:
-	
+	AbstractSettingsSection *currentPage = nullptr;
+	void setCurrentPage(AbstractSettingsSection *page);
 
-private:
-	void clearPage();
+	AbstractSettingsSection *pageFromItem(QListWidgetItem *item);
 
-private slots:
-	void switchToPage(QListWidgetItem *current, QListWidgetItem *previous);
+	inline void enableApplyButton(bool enable);
+
+	bool discardChanges = false;
+
+	bool promptSave();
+
+	bool isSettingsValid();
+	bool isAllowedToClose();
+
+	void saveAll();
+	void discardAndClose();
 
 protected:
-	
+	virtual void closeEvent(QCloseEvent *event) override;
 
 public:
 	SettingsWindow(QWidget *parent);
 	~SettingsWindow();
+
+public slots:
+	void reject();
+	void showEvent(QShowEvent *event);
+
+	void apply();
+	void saveAndClose();
+
+	void switchToPage(QListWidgetItem *current, QListWidgetItem *previous);
+
+	void sectionUpdate(bool pending);
+	void updateRestartMessage(int total);
 };
