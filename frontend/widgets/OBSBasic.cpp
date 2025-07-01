@@ -42,6 +42,7 @@
 #include <utility/WhatsNewInfoThread.hpp>
 #endif
 #include <widgets/OBSProjector.hpp>
+#include <components/GuidePopup.hpp>
 
 #include <OBSStudioAPI.hpp>
 #ifdef BROWSER_AVAILABLE
@@ -507,6 +508,25 @@ OBSBasic::OBSBasic(QWidget *parent) : OBSMainWindow(parent), undo_s(ui), ui(new 
 	UpdatePreviewSafeAreas();
 	UpdatePreviewSpacingHelpers();
 	UpdatePreviewOverflowSettings();
+
+	// Custom Tooltip Thingie
+	GuidePopup *newPopup = new GuidePopup(this);
+	newPopup->setAnchor(ui->scenesDock);
+
+	newPopup->setTitle("Scenes Dock");
+	newPopup->setInfo(
+		"**Scenes** are an arrangement of one or more layers known as **Sources**. You can switch between different **Scenes** by selecting them in the list.");
+
+	GuidePopup *newPopup2 = new GuidePopup(this);
+	newPopup2->setTitle("Sources Dock");
+	newPopup2->setInfo(
+		"Add a **Source** to add things like images, videos, webcams, capture cards od screen captures to your **Scene**.");
+
+	newPopup2->setAnchor(ui->sourcesDock);
+	//newPopup2->setAnchorCorner(Qt::TopLeftCorner);
+	//newPopup2->setOrientation(Qt::Vertical);
+
+	connect(newPopup, &GuidePopup::accepted, this, [=]() { newPopup->deleteLater(); });
 }
 
 static const double scaled_vals[] = {1.0, 1.25, (1.0 / 0.75), 1.5, (1.0 / 0.6), 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 0.0};

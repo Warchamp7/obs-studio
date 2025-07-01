@@ -2122,3 +2122,69 @@ OBSBasicAdvAudio #scrollAreaWidgetContents {
 #previewZoomOutButton:focus {
     border: 1px solid var(--input_border_hover);
 }
+
+GuidePopup #contentsFrame {
+    background: var(--blue3);
+    padding: 1px;
+    border-radius: var(--border_radius);
+}
+
+GuidePopup #infoTitle {
+    font-size: var(--font_large);
+    font-weight: bold;
+    padding: var(--padding_large) var(--padding_base);
+    border-top-left-radius: var(--border_radius);
+    border-top-right-radius: var(--border_radius);
+}
+
+GuidePopup #infoText {
+    background: var(--grey6);
+    padding: var(--padding_xlarge);
+    min-width: 300px;
+}
+
+GuidePopup #infoFooter {
+    background: var(--grey6);
+    padding: var(--spacing_base);
+    border-top: 1px solid var(--border_color);
+    border-bottom-left-radius: var(--border_radius);
+    border-bottom-right-radius: var(--border_radius);
+}
+
+GuidePopup #infoFooter QPushButton {
+    background-color: var(--blue3);
+    border-color: var(--blue3);
+    font-weight: bold;
+    margin: 0;
+    padding: var(--padding_base) var(--padding_wide);
+    outline: none;
+}
+
+GuidePopup #infoFooter QPushButton:hover {
+    background-color: var(--blue3);
+    border-color: var(--blue2);
+    color: var(--text);
+}
+
+GuidePopup #infoFooter QPushButton:focus:!pressed {
+    border-color: var(--white1);
+}
+
+GuidePopup #infoFooter QPushButton:pressed {
+    background-color: var(--blue5);
+}
+
+GuidePopup #dismissBtn {
+    background: transparent;
+    border: none;
+    font-size: var(--font_large);
+    font-weight: bold;
+    padding: 0;
+    width: var(--input_height);
+    height: var(--input_height);
+    margin-right: var(--padding_large);
+}
+
+GuidePopup #dismissBtn:hover {
+    background: var(--blue4);
+}

@@ -34,6 +34,8 @@ target_sources(
     components/FocusList.hpp
     components/GameCaptureToolbar.cpp
     components/GameCaptureToolbar.hpp
+    components/GuidePopup.cpp
+    components/GuidePopup.hpp
     components/HScrollArea.cpp
     components/HScrollArea.hpp
     components/ImageSourceToolbar.cpp
