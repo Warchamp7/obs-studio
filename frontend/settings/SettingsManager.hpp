@@ -17,30 +17,93 @@
 
 #pragma once
 
-#include <QWidget>
+#include <QObject>
 
-class SettingsPage {
-private:
-	QString settingsKey;
-	QString displayName;
+#include <util/util.hpp>
 
-public:
-	SettingsPage(QString settingsKey, QString displayName);
-	~SettingsPage();
+enum class ConfigType { AppConfig, UserConfig, ProfileConfig };
+enum class ConfigValueType { Int, Uint, Bool, Double, String };
 
-	QString name() { return displayName; }
-	QIcon icon() { return QIcon(); }
-	virtual QWidget *createWidget(QWidget *parent);
-};
+class AbstractSettingsSection;
+class SettingsItem;
 
-class SettingsManager {
-private:
-	std::vector<SettingsPage *> settingsList;
+class SettingsManager : public QObject {
+	Q_OBJECT
+
+	std::unordered_map<std::string, AbstractSettingsSection *> sectionLookup;
+	std::vector<std::unique_ptr<AbstractSettingsSection>> sectionList;
+
+	config_t *getConfig(ConfigType type);
+
+	SettingsItem *getItem(std::string section, std::string name);
+
+	int64_t getInt(ConfigType config, std::string section, std::string name);
+	uint64_t getUint(ConfigType config, std::string section, std::string name);
+	bool getBool(ConfigType config, std::string section, std::string name);
+	double getDouble(ConfigType config, std::string section, std::string name);
+	std::string getString(ConfigType config, std::string section, std::string name);
+
+	void setInt(ConfigType config, std::string section, std::string name, int64_t value);
+	void setUint(ConfigType config, std::string section, std::string name, uint64_t value);
+	void setBool(ConfigType config, std::string section, std::string name, bool value);
+	void setDouble(ConfigType config, std::string section, std::string name, double value);
+	void setString(ConfigType config, std::string section, std::string name, std::string value);
+
+	void setDefaultInt(ConfigType config, std::string section, std::string name, int64_t value);
+	void setDefaultUint(ConfigType config, std::string section, std::string name, uint64_t value);
+	void setDefaultBool(ConfigType config, std::string section, std::string name, bool value);
+	void setDefaultDouble(ConfigType config, std::string section, std::string name, double value);
+	void setDefaultString(ConfigType config, std::string section, std::string name, std::string value);
+
+	int restartNeeded = 0;
+
+signals:
+	void saved();
+	void restartNeededChanged(int total);
 
 public:
 	SettingsManager();
 	~SettingsManager();
 
-	void registerPage(SettingsPage *newPage);
-	std::vector<SettingsPage *> getPages() { return settingsList; }
+	void addSimple(std::string simpleName);
+	void addSection(std::unique_ptr<AbstractSettingsSection> entry);
+	void createSection(AbstractSettingsSection *entry);
+	const auto &getSections() const { return sectionList; }
+
+	AbstractSettingsSection *findSection(std::string section);
+
+	void setItemDefault(SettingsItem *item, QVariant value);
+	void initializeConfigDefaults(ConfigType config);
+
+	SettingsItem *registerSetting(std::string section, std::string settingsName, const char *defaultValue,
+				      ConfigType config = ConfigType::UserConfig);
+	SettingsItem *registerSetting(std::string section, std::string settingsName, int defaultValue,
+				      ConfigType config = ConfigType::UserConfig);
+	SettingsItem *registerSetting(std::string section, std::string settingsName, uint64_t defaultValue,
+				      ConfigType config = ConfigType::UserConfig);
+	SettingsItem *registerSetting(std::string section, std::string settingsName, bool defaultValue,
+				      ConfigType config = ConfigType::UserConfig);
+	SettingsItem *registerSetting(std::string section, std::string settingsName, double defaultValue,
+				      ConfigType config = ConfigType::UserConfig);
+
+	bool addSetting(std::unique_ptr<SettingsItem> item, QVariant defaultValue);
+
+	QVariant getValue(std::string section, std::string name);
+	QVariant getValue(SettingsItem *item);
+	QVariant currentValue(std::string section, std::string name);
+	QVariant currentValue(SettingsItem *item);
+	QVariant savedValue(SettingsItem *item);
+	QVariant dirtyValue(SettingsItem *item);
+
+	void saveAll();
+	void discardAll();
+
+	bool everySectionValid();
+	bool anySectionPending();
+
+	void saveItemPending(SettingsItem *item);
+	void saveItemValue(SettingsItem *item, QVariant value);
+
+public slots:
+	void updateRestartTotal();
 };

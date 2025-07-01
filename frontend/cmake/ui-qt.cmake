@@ -18,7 +18,7 @@ set_target_properties(
   PROPERTIES AUTOMOC TRUE AUTOUIC TRUE AUTORCC TRUE AUTOGEN_PARALLEL AUTO
 )
 
-set_property(TARGET obs-studio APPEND PROPERTY AUTOUIC_SEARCH_PATHS forms forms/source-toolbar)
+set_property(TARGET obs-studio APPEND PROPERTY AUTOUIC_SEARCH_PATHS forms forms/settings forms/source-toolbar)
 
 target_sources(
   obs-studio
@@ -49,6 +49,15 @@ target_sources(
     forms/obs.qrc
     forms/PluginManagerWindow.ui
     forms/SettingsWindow.ui
+    forms/settings/AccessibilityPage.ui
+    forms/settings/AdvancedPage.ui
+    forms/settings/AppearancePage.ui
+    forms/settings/AudioPage.ui
+    forms/settings/GeneralPage.ui
+    forms/settings/HotkeyPage.ui
+    forms/settings/OutputPage.ui
+    forms/settings/StreamPage.ui
+    forms/settings/VideoPage.ui
     forms/source-toolbar/browser-source-toolbar.ui
     forms/source-toolbar/color-source-toolbar.ui
     forms/source-toolbar/device-select-toolbar.ui

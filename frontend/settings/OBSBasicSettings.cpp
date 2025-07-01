@@ -3783,6 +3783,8 @@ void OBSBasicSettings::reject()
 
 void OBSBasicSettings::on_listWidget_itemSelectionChanged()
 {
+	//// REFACTOR NOTE: Set this up for the Hotkey section and connect to pageActivated
+
 	int row = ui->listWidget->currentRow();
 
 	if (loading || row == pageIndex)

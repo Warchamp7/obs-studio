@@ -21,6 +21,16 @@
 #include <dialogs/LogUploadDialog.hpp>
 #include <plugin-manager/PluginManager.hpp>
 #include <utility/CrashHandler.hpp>
+#include <settings/SettingsWindow.hpp>
+#include <settings/AccessibilitySection.hpp>
+#include <settings/AdvancedSection.hpp>
+#include <settings/AppearanceSection.hpp>
+#include <settings/AudioSection.hpp>
+#include <settings/GeneralSection.hpp>
+#include <settings/HotkeySection.hpp>
+#include <settings/OutputSection.hpp>
+#include <settings/StreamSection.hpp>
+#include <settings/VideoSection.hpp>
 #include <utility/OBSEventFilter.hpp>
 #include <utility/OBSProxyStyle.hpp>
 #if defined(_WIN32) || defined(ENABLE_SPARKLE_UPDATER)
@@ -503,6 +513,45 @@ bool OBSApp::UpdatePre22MultiviewLayout(const char *layout)
 	}
 
 	return false;
+}
+
+void OBSApp::initSettingsManager()
+{
+	SettingsManager *settings = App()->getSettingsManager();
+
+	settings->addSimple("Basic");
+	settings->addSimple("BasicWindow");
+
+	settings->addSimple("SimpleOutput");
+	settings->addSimple("AdvOut");
+
+	auto generalSection = new GeneralSection("General", QTStr("Basic.Settings.General"));
+	settings->createSection(generalSection);
+
+	auto appearanceSection = std::make_unique<AppearanceSection>("Appearance", QTStr("Basic.Settings.Appearance"));
+	settings->addSection(std::move(appearanceSection));
+
+	auto streamSection = std::make_unique<StreamSection>("Stream", QTStr("Basic.Settings.Stream"));
+	settings->addSection(std::move(streamSection));
+
+	auto outputSection = std::make_unique<OutputSection>("Output", QTStr("Basic.Settings.Output"));
+	settings->addSection(std::move(outputSection));
+
+	auto audioSection = std::make_unique<AudioSection>("Audio", QTStr("Basic.Settings.Audio"));
+	settings->addSection(std::move(audioSection));
+
+	auto videoSection = std::make_unique<VideoSection>("Video", QTStr("Basic.Settings.Video"));
+	settings->addSection(std::move(videoSection));
+
+	auto hotkeySection = std::make_unique<HotkeySection>("Hotkeys", QTStr("Basic.Settings.Hotkeys"));
+	settings->addSection(std::move(hotkeySection));
+
+	auto accessibilitySection =
+		std::make_unique<AccessibilitySection>("Accessibility", QTStr("Basic.Settings.Accessibility"));
+	settings->addSection(std::move(accessibilitySection));
+
+	auto advancedSection = std::make_unique<AdvancedSection>("Advanced", QTStr("Basic.Settings.Advanced"));
+	settings->addSection(std::move(advancedSection));
 }
 
 bool OBSApp::InitGlobalConfig()
@@ -1134,6 +1183,12 @@ void OBSApp::DisableHotkeys()
 	ResetHotkeyState(applicationState() == Qt::ApplicationActive);
 }
 
+void OBSApp::openSettingsWindow(QWidget *parent)
+{
+	settingsWindow = new SettingsWindow(parent);
+	settingsWindow->open();
+}
+
 void OBSApp::Exec(VoidFunc func)
 {
 	func();
@@ -1226,6 +1281,9 @@ bool OBSApp::OBSInit()
 
 	setQuitOnLastWindowClosed(false);
 
+	settingsManager = new SettingsManager();
+	initSettingsManager();
+
 	mainWindow = new OBSBasic();
 
 	mainWindow->setAttribute(Qt::WA_DeleteOnClose, true);
@@ -1244,6 +1302,8 @@ bool OBSApp::OBSInit()
 
 	connect(crashHandler_.get(), &OBS::CrashHandler::crashLogUploadFinished, this,
 		[this](const QString &fileUrl) { emit this->logUploadFinished(OBS::LogFileType::CrashLog, fileUrl); });
+
+	connect(settingsManager, &SettingsManager::saved, OBSBasic::Get(), &OBSBasic::SaveProject);
 
 	return true;
 }

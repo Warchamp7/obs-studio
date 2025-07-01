@@ -300,9 +300,6 @@ private:
 	// TODO: Remove, orphaned instance method
 	void LoadProject();
 
-	void initSettingsManager();
-	SettingsManager *settingsManager_;
-
 public slots:
 	void UpdatePatronJson(const QString &text, const QString &error);
 	void UpdateEditMenu();
@@ -328,12 +325,11 @@ public:
 	void UpdateTitleBar();
 
 	static OBSBasic *Get();
+	ConfigFile &getActiveConfig() { return activeConfiguration; }
 
 	void SetDisplayAffinity(QWindow *window);
 
 	inline bool Closing() { return closing; }
-
-	SettingsManager *settingsManager() { return settingsManager_; }
 
 protected:
 	virtual void closeEvent(QCloseEvent *event) override;
@@ -815,20 +811,11 @@ private:
 
 	void Nudge(int dist, MoveDir dir);
 
-	void UpdateProjectorHideCursor();
-	void UpdateProjectorAlwaysOnTop(bool top);
-	void ResetProjectors();
-
-	void UpdatePreviewSafeAreas();
-
 	QColor GetCropColor() const;
 	QColor GetHoverColor() const;
 
-	void UpdatePreviewSpacingHelpers();
-
 	float GetDevicePixelRatio();
 
-	void UpdatePreviewOverflowSettings();
 	void UpdatePreviewControls();
 
 	/* OBS Callbacks */
@@ -868,6 +855,14 @@ public:
 	}
 
 	QColor GetSelectionColor() const;
+
+	void UpdatePreviewOverflowSettings();
+	void UpdatePreviewSafeAreas();
+	void UpdatePreviewSpacingHelpers();
+
+	void UpdateProjectorAlwaysOnTop(bool top);
+	void UpdateProjectorHideCursor();
+	void ResetProjectors();
 
 signals:
 	void CanvasResized(uint32_t width, uint32_t height);
@@ -1606,11 +1601,13 @@ private:
 	QScopedPointer<QThread> introCheckThread;
 
 	void TimedCheckForUpdates();
-	void CheckForUpdates(bool manualUpdate);
 
 	void MacBranchesFetched(const QString &branch, bool manualUpdate);
 	void ReceivedIntroJson(const QString &text);
 	void ShowWhatsNew(const QString &url);
+
+public:
+	void CheckForUpdates(bool manualUpdate);
 
 	/* -------------------------------------
 	 * MARK: - OBSBasic_VirtualCam
@@ -1656,8 +1653,6 @@ signals:
 private:
 	std::vector<VolControl *> volumes;
 
-	void UpdateVolumeControlsDecayRate();
-	void UpdateVolumeControlsPeakMeterType();
 	void ClearVolumeControls();
 	void VolControlContextMenu();
 	void ToggleVolControlLayout();
@@ -1679,6 +1674,8 @@ private slots:
 	void StackedMixerAreaContextMenuRequested();
 
 public:
+	void UpdateVolumeControlsDecayRate();
+	void UpdateVolumeControlsPeakMeterType();
 	void RefreshVolumeColors();
 
 	/* -------------------------------------

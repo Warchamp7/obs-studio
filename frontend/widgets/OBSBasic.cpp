@@ -39,6 +39,7 @@
 #include <dialogs/OBSBasicTransform.hpp>
 #include <models/SceneCollection.hpp>
 #include <settings/OBSBasicSettings.hpp>
+#include <settings/AppearanceSection.hpp>
 #include <utility/QuickTransition.hpp>
 #include <utility/SceneRenameDelegate.hpp>
 #if defined(_WIN32) || defined(WHATSNEW_ENABLED)
@@ -245,8 +246,6 @@ OBSBasic::OBSBasic(QWidget *parent) : OBSMainWindow(parent), undo_s(ui), ui(new 
 	ui->setupUi(this);
 	ui->previewDisabledWidget->setVisible(false);
 
-	initSettingsManager();
-
 	/* Set up streaming connections */
 	connect(
 		this, &OBSBasic::StreamingStarting, this, [this] { this->streamingStarting = true; },
@@ -309,6 +308,7 @@ OBSBasic::OBSBasic(QWidget *parent) : OBSMainWindow(parent), undo_s(ui), ui(new 
 	connect(controls, &OBSBasicControls::StudioModeButtonClicked, this, &OBSBasic::TogglePreviewProgramMode);
 
 	connect(controls, &OBSBasicControls::SettingsButtonClicked, this, &OBSBasic::on_action_Settings_triggered);
+	connect(controls, &OBSBasicControls::SettingsNewButtonClicked, this, &OBSBasic::openNewSettings);
 
 	/* Set up transitions combobox connections */
 	connect(this, &OBSBasic::TransitionAdded, this, [this](const QString &name, const QString &uuid) {
@@ -893,6 +893,10 @@ bool OBSBasic::InitBasicConfig()
 		OBSErrorBox(NULL, "Failed to open basic.ini: %d", -1);
 		return false;
 	}
+
+	App()->getSettingsManager()->initializeConfigDefaults(ConfigType::AppConfig);
+	App()->getSettingsManager()->initializeConfigDefaults(ConfigType::UserConfig);
+	App()->getSettingsManager()->initializeConfigDefaults(ConfigType::ProfileConfig);
 
 	return true;
 }
@@ -1899,20 +1903,6 @@ void OBSBasic::GetConfigFPS(uint32_t &num, uint32_t &den) const
 config_t *OBSBasic::Config() const
 {
 	return activeConfiguration;
-}
-
-void OBSBasic::initSettingsManager()
-{
-	settingsManager_ = new SettingsManager();
-
-	SettingsPage *testPage = new SettingsPage("test", "Test Page");
-	settingsManager()->registerPage(testPage);
-
-	SettingsPage *testPage2 = new SettingsPage("test2", "Test Page 2");
-	settingsManager()->registerPage(testPage2);
-
-	AppearancePage *appearancePage = new AppearancePage("appearance", "Appearance");
-	settingsManager()->registerPage(appearancePage);
 }
 
 void OBSBasic::UpdateEditMenu()
