@@ -510,23 +510,36 @@ OBSBasic::OBSBasic(QWidget *parent) : OBSMainWindow(parent), undo_s(ui), ui(new 
 	UpdatePreviewOverflowSettings();
 
 	// Custom Tooltip Thingie
+
 	GuidePopup *newPopup = new GuidePopup(this);
-	newPopup->setAnchor(ui->scenesDock);
+	newPopup->setAnchorTarget(ui->scenesDock);
 
 	newPopup->setTitle("Scenes Dock");
 	newPopup->setInfo(
 		"**Scenes** are an arrangement of one or more layers known as **Sources**. You can switch between different **Scenes** by selecting them in the list.");
+	newPopup->setMultipleSteps(true);
 
 	GuidePopup *newPopup2 = new GuidePopup(this);
-	newPopup2->setTitle("Sources Dock");
+	newPopup2->setTitle("Audio Dock");
 	newPopup2->setInfo(
 		"Add a **Source** to add things like images, videos, webcams, capture cards od screen captures to your **Scene**.");
 
-	newPopup2->setAnchor(ui->sourcesDock);
-	//newPopup2->setAnchorCorner(Qt::TopLeftCorner);
+	newPopup2->setAnchorTarget(ui->mixerDock);
+	newPopup2->setAnchorTo(Anchor::TopLeft);
+	newPopup2->setAnchorFrom(Anchor::TopLeft);
 	//newPopup2->setOrientation(Qt::Vertical);
 
 	connect(newPopup, &GuidePopup::accepted, this, [=]() { newPopup->deleteLater(); });
+
+	GuidePopup *newPopup3 = new GuidePopup(this);
+	newPopup3->setTitle("Preview");
+	newPopup3->setInfo(
+		"You can hold Shift when resizing a source to ignore aspect ratio. Hold Alt instead to crop the source.");
+
+	newPopup3->setAnchorTarget(ui->centralwidget);
+	newPopup3->setAnchorTo(Anchor::BottomLeft);
+	newPopup3->setAnchorFrom(Anchor::BottomLeft);
+	newPopup3->setOrientation(Qt::Vertical);
 }
 
 static const double scaled_vals[] = {1.0, 1.25, (1.0 / 0.75), 1.5, (1.0 / 0.6), 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 0.0};

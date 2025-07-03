@@ -12,11 +12,59 @@
 #include <util/base.h>
 #include <OBSApp.hpp>
 
+namespace {
+QPoint getAnchorCoordinate(QWidget *widget, Anchor::Point anchor)
+{
+	QPoint anchorPoint(0, 0);
+
+	if (anchor == Anchor::TopLeft) {
+		anchorPoint = widget->geometry().topLeft();
+	} else if (anchor == Anchor::TopCenter) {
+		anchorPoint = QPoint(widget->geometry().center().x(), widget->geometry().top());
+	} else if (anchor == Anchor::TopRight) {
+		anchorPoint = widget->geometry().topRight();
+	} else if (anchor == Anchor::LeftCenter) {
+		anchorPoint = QPoint(widget->geometry().left(), widget->geometry().center().y());
+	} else if (anchor == Anchor::RightCenter) {
+		anchorPoint = QPoint(widget->geometry().right(), widget->geometry().center().y());
+	} else if (anchor == Anchor::BottomLeft) {
+		anchorPoint = widget->geometry().bottomLeft();
+	} else if (anchor == Anchor::BottomCenter) {
+		anchorPoint = QPoint(widget->geometry().center().x(), widget->geometry().bottom());
+	} else if (anchor == Anchor::BottomRight) {
+		anchorPoint = widget->geometry().bottomRight();
+	}
+
+	return anchorPoint;
+}
+
+bool isAnchorLeft(Anchor::Point anchor)
+{
+	return anchor & Anchor::Left;
+}
+bool isAnchorRight(Anchor::Point anchor)
+{
+	return anchor & Anchor::Right;
+}
+bool isAnchorTop(Anchor::Point anchor)
+{
+	return anchor & Anchor::Top;
+}
+bool isAnchorBottom(Anchor::Point anchor)
+{
+	return anchor & Anchor::Bottom;
+}
+} // namespace
+
 GuidePopup::GuidePopup(QWidget *parent) : QFrame(parent)
 {
 	if (window()) {
-		setParent(window());
+		parentWindow = window();
 	}
+
+	setWindowFlag(Qt::Tool, true);
+	setWindowFlag(Qt::FramelessWindowHint, true);
+	setAttribute(Qt::WA_TranslucentBackground, true);
 
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 
@@ -26,10 +74,12 @@ GuidePopup::GuidePopup(QWidget *parent) : QFrame(parent)
 	setLayout(mainLayout);
 
 	arrowStart = new QWidget();
-	arrowStart->setMinimumSize(8, 8);
+	arrowStart->setMinimumSize(10, 10);
+	arrowStart->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
 	arrowEnd = new QWidget();
-	arrowEnd->setMinimumSize(8, 8);
+	arrowEnd->setMinimumSize(10, 10);
+	arrowEnd->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
 	contents = new QFrame(this);
 	contents->setObjectName("contentsFrame");
@@ -76,6 +126,7 @@ GuidePopup::GuidePopup(QWidget *parent) : QFrame(parent)
 	footer->setLayout(footerLayout);
 
 	footerNext = new QPushButton("Next", footer);
+	footerLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Preferred));
 	footerLayout->addWidget(footerNext);
 
 	textLayout->addWidget(header);
@@ -89,9 +140,8 @@ GuidePopup::GuidePopup(QWidget *parent) : QFrame(parent)
 	mainLayout->setAlignment(arrowStart, Qt::AlignTop);
 	mainLayout->addWidget(contents);
 	mainLayout->addWidget(arrowEnd);
-	arrowEnd->hide();
 
-	window()->installEventFilter(this);
+	parentWindow->installEventFilter(this);
 
 	setMultipleSteps(false);
 
@@ -101,7 +151,7 @@ GuidePopup::GuidePopup(QWidget *parent) : QFrame(parent)
 	/* Works around an issue where switching between tabbed docks
 	 * puts the central widget above these widgets
 	 */
-	QMainWindow *mainWindow = dynamic_cast<QMainWindow *>(window());
+	QMainWindow *mainWindow = dynamic_cast<QMainWindow *>(parentWindow);
 	if (mainWindow) {
 		connect(mainWindow, &QMainWindow::tabifiedDockWidgetActivated, this, &GuidePopup::updatePosition);
 	}
@@ -111,14 +161,15 @@ GuidePopup::GuidePopup(QWidget *parent) : QFrame(parent)
 
 GuidePopup::~GuidePopup() {}
 
-void GuidePopup::setAnchor(QWidget *anchor_)
+void GuidePopup::setAnchorTarget(QWidget *anchor_)
 {
-	if (anchor) {
-		anchor->removeEventFilter(this);
+	if (anchorWidget) {
+		anchorWidget->removeEventFilter(this);
 	}
 
-	anchor = anchor_;
-	anchor->installEventFilter(this);
+	anchorWidget = anchor_;
+	anchorWidget->installEventFilter(this);
+	anchorWidget->parentWidget()->installEventFilter(this);
 
 	updatePosition();
 }
@@ -146,13 +197,23 @@ void GuidePopup::setMultipleSteps(bool enable)
 	}
 }
 
-void GuidePopup::setAnchorCorner(Qt::Corner corner)
+void GuidePopup::setAnchorFrom(Anchor::Point corner)
 {
-	if (anchorCorner == corner) {
+	if (anchorFrom == corner) {
 		return;
 	}
 
-	anchorCorner = corner;
+	anchorFrom = corner;
+	updatePosition();
+}
+
+void GuidePopup::setAnchorTo(Anchor::Point corner)
+{
+	if (anchorTo == corner) {
+		return;
+	}
+
+	anchorTo = corner;
 	updatePosition();
 }
 
@@ -210,7 +271,9 @@ bool GuidePopup::eventFilter(QObject *obj, QEvent *event)
 {
 	if (event->type() == QEvent::Resize) {
 		updatePosition();
-	} else if (obj == anchor && event->type() == QEvent::Move) {
+	} else if (obj == parentWindow && event->type() == QEvent::Move) {
+		updatePosition();
+	} else if (obj == anchorWidget && event->type() == QEvent::Move) {
 		updatePosition();
 	} else if (event->type() == QEvent::Show) {
 		updatePosition();
@@ -231,54 +294,56 @@ void GuidePopup::paintEvent(QPaintEvent *event)
 
 	QColor contentsBg = contents->palette().color(QWidget::backgroundRole());
 
-	int arrowWidth = 10;
-	float arrowHeight = title->height() / 8 * 6;
-	int arrowOffset = title->height() / 8;
+	float arrowSize = 10;
 
-	QRectF rect = QRectF(0, arrowOffset, arrowWidth, arrowHeight);
+	QPoint arrowPos = mapFromGlobal(arrowPosition);
+	int arrowX = std::max(0, arrowPos.x());
+	int arrowY = std::max(0, arrowPos.y());
+
+	int arrowOffset = (int)(title->height() - arrowSize) / 2;
+
+	QRectF rect = QRectF(arrowX, arrowY, arrowSize, arrowSize);
 	QPointF arrowPoint1;
 	QPointF arrowPoint2;
 	QPointF arrowTip;
 
 	if (orientation == Qt::Horizontal) {
+		arrowY = std::min((int)arrowPos.y() + arrowOffset, (int)(height() - arrowOffset - arrowSize * 2));
+		rect.setY(arrowY);
+
 		if (showOnLeft) {
-			rect = arrowEnd->geometry();
-			rect.setY(rect.y() + arrowOffset);
-			rect.setHeight(arrowHeight);
+			rect.setHeight(arrowSize * 2);
 
 			// Right-facing arrow
 			arrowPoint1 = rect.topLeft();
 			arrowPoint2 = rect.bottomLeft();
-			arrowTip = QPointF(rect.right(), rect.top() + arrowHeight / 2);
+			arrowTip = QPointF(rect.right(), rect.top() + arrowSize);
 		} else {
-			rect = arrowStart->geometry();
-			rect.setY(rect.y() + arrowOffset);
-			rect.setHeight(arrowHeight);
+			rect.setHeight(arrowSize * 2);
 
 			// Left-facing arrow
 			arrowPoint1 = rect.topRight();
 			arrowPoint2 = rect.bottomRight();
-			arrowTip = QPointF(rect.left(), rect.top() + arrowHeight / 2);
+			arrowTip = QPointF(rect.left(), rect.top() + arrowSize);
 		}
 	} else {
+		arrowX = std::min((int)arrowPos.x() + arrowOffset, (int)(width() - arrowOffset - arrowSize * 2));
+		rect.setX(arrowX);
+
 		if (showOnBottom) {
-			rect = arrowStart->geometry();
-			rect.setX(rect.x() + arrowOffset);
-			rect.setWidth(arrowHeight);
+			rect.setWidth(arrowSize * 2);
 
 			// Up-facing arrow
 			arrowPoint1 = rect.bottomLeft();
 			arrowPoint2 = rect.bottomRight();
-			arrowTip = QPointF(rect.left() + arrowHeight / 2, rect.top());
+			arrowTip = QPointF(rect.left() + arrowSize, rect.top());
 		} else {
-			rect = arrowEnd->geometry();
-			rect.setX(rect.x() + arrowOffset);
-			rect.setWidth(arrowHeight);
+			rect.setWidth(arrowSize * 2);
 
 			// Down-facing arrow
 			arrowPoint1 = rect.topLeft();
 			arrowPoint2 = rect.topRight();
-			arrowTip = QPointF(rect.left() + arrowHeight / 2, rect.bottom());
+			arrowTip = QPointF(rect.left() + arrowSize, rect.bottom());
 		}
 	}
 
@@ -291,16 +356,16 @@ void GuidePopup::paintEvent(QPaintEvent *event)
 	painter.fillPath(path, QBrush(contentsBg));
 }
 
-void GuidePopup::updatePosition()
+void GuidePopup::updateVisibility()
 {
-	if (!anchor) {
+	if (!anchorWidget) {
 		if (isVisible()) {
 			hide();
 		}
 		return;
 	}
 
-	if (anchor == anchor->window()) {
+	if (anchorWidget == anchorWidget->window()) {
 		if (isVisible()) {
 			hide();
 		}
@@ -310,51 +375,91 @@ void GuidePopup::updatePosition()
 	if (!isVisible()) {
 		show();
 	}
+}
 
-	QRect rect = geometry();
-	QPoint anchorPoint = anchor->geometry().topRight();
-
-	if (anchor->geometry().x() < 0 || anchor->geometry().y() < 0) {
-		hide();
+void GuidePopup::updatePosition()
+{
+	if (isUpdating) {
 		return;
 	}
 
-	if (anchorCorner == Qt::TopLeftCorner) {
-		anchorPoint = anchor->geometry().topLeft();
-	} else if (anchorCorner == Qt::BottomLeftCorner) {
-		anchorPoint = anchor->geometry().bottomLeft();
-	} else if (anchorCorner == Qt::BottomRightCorner) {
-		anchorPoint = anchor->geometry().bottomRight();
+	isUpdating = true;
+
+	updateVisibility();
+
+	if (!anchorWidget) {
+		isUpdating = false;
+		return;
+	}
+
+	QPoint anchorPoint;
+	QRect rect = geometry();
+
+	QPoint debug = getAnchorCoordinate(anchorWidget, anchorTo);
+	anchorPoint = anchorWidget->parentWidget()->mapToGlobal(getAnchorCoordinate(anchorWidget, anchorTo));
+
+	int offsetX;
+	int offsetY;
+	if (isAnchorLeft(anchorFrom)) {
+		offsetX = 0;
+	} else if (isAnchorRight(anchorFrom)) {
+		offsetX = width() * -1;
+	} else {
+		offsetX = width() / 2 * -1;
+	}
+
+	if (isAnchorTop(anchorFrom)) {
+		offsetY = 0;
+	} else if (isAnchorBottom(anchorFrom)) {
+		offsetY = height() * -1;
+	} else {
+		offsetY = height() / 2 * -1;
+	}
+
+	bool switchHorizontal = false;
+	if (isAnchorRight(anchorTo)) {
+		switchHorizontal = anchorPoint.x() + offsetX + width() - 2 >
+				   anchorWidget->window()->frameGeometry().right();
+	} else if (isAnchorLeft(anchorTo)) {
+		switchHorizontal = anchorPoint.x() + offsetX + 2 < anchorWidget->window()->frameGeometry().left();
+	}
+
+	bool switchVertical = false;
+	if (isAnchorTop(anchorTo)) {
+		switchVertical = anchorPoint.y() + offsetY + 2 < anchorWidget->window()->frameGeometry().top();
+	} else if (isAnchorBottom(anchorTo)) {
+		switchVertical = anchorPoint.y() + offsetY + height() - 2 >
+				 anchorWidget->window()->frameGeometry().bottom();
 	}
 
 	int arrowWidth = 10;
-	int arrowHeight = title->height();
+	int arrowHeight = arrowWidth * 2;
 
-	int anchorX = 0;
-	int anchorY = 0;
+	int anchorX = anchorPoint.x() + offsetX;
+	int anchorY = anchorPoint.y() + offsetY;
 
-	bool anchoredToLeft = anchorCorner == Qt::TopLeftCorner || anchorCorner == Qt::BottomLeftCorner;
-	bool anchoredToBottom = anchorCorner == Qt::BottomLeftCorner || anchorCorner == Qt::BottomRightCorner;
+	showOnLeft = isAnchorLeft(anchorTo) || isAnchorRight(anchorFrom) || switchHorizontal;
+	showOnBottom = isAnchorBottom(anchorTo) || isAnchorTop(anchorFrom) || switchVertical;
 
-	showOnLeft = anchoredToLeft;
-	showOnBottom = anchoredToBottom;
+	if (switchHorizontal) {
+		if (isAnchorRight(anchorTo)) {
+			anchorX = anchorX - anchorWidget->geometry().width() - width() + offsetX;
+		} else if (isAnchorLeft(anchorTo)) {
+			anchorX = anchorX + anchorWidget->geometry().width() - offsetX;
+		}
+	}
+
+	if (switchVertical) {
+		anchorY = anchorPoint.y() + (offsetY * -1 - height());
+	}
+
+	arrowPosition.setX(anchorX);
+	arrowPosition.setY(anchorY);
 
 	if (orientation == Qt::Horizontal) {
-		arrowStart->resize(arrowWidth, arrowHeight);
-		arrowEnd->resize(arrowWidth, arrowHeight);
-
-		anchorX = anchorPoint.x() + 2;
-		anchorY = anchorPoint.y() + 2;
-
-		if (!showOnLeft && anchorPoint.x() + width() > window()->width()) {
-			showOnLeft = true;
-		} else if (showOnLeft && anchorPoint.x() - width() < 0) {
-			showOnLeft = false;
-		}
+		anchorX += 2;
 
 		if (showOnLeft) {
-			anchorX = anchor->geometry().left() - width();
-
 			arrowStart->hide();
 			arrowEnd->show();
 		} else {
@@ -363,54 +468,35 @@ void GuidePopup::updatePosition()
 		}
 
 	} else {
-		arrowStart->resize(arrowHeight, arrowWidth);
-		arrowEnd->resize(arrowHeight, arrowWidth);
-
-		anchorX = anchorPoint.x() + 2;
-		anchorY = anchorPoint.y() + 2;
-
-		if (!showOnBottom && anchorPoint.y() - height() < 0) {
-			showOnBottom = true;
-		} else if (showOnBottom && anchorPoint.y() + height() + 20 > window()->height()) {
-			showOnBottom = false;
-		}
+		anchorY += 2;
 
 		if (showOnBottom) {
 			arrowStart->show();
 			arrowEnd->hide();
-
-			if (!anchoredToBottom) {
-				anchorY += 20;
-			}
 		} else {
-			anchorY = anchor->geometry().top() - height();
-
 			arrowStart->hide();
 			arrowEnd->show();
 		}
 	}
 
-	int arrowXOffset = std::max(0, anchorX + width() - window()->width());
-	int arrowYOffset = std::max(0, anchorY + height() - window()->height() + 40);
+	// anchorX = std::max(0, std::min(window()->width() - width(), anchorX));
+	// anchorY = std::max(0, std::min(window()->height() - height() - 40, anchorY));
 
-	anchorX = std::max(0, std::min(window()->width() - width(), anchorX));
-	anchorY = std::max(0, std::min(window()->height() - height() - 40, anchorY));
-
-	if (orientation == Qt::Horizontal) {
-		arrowStart->move(0, arrowYOffset);
-		contents->move(arrowWidth, 0);
-		arrowEnd->move(contents->geometry().right(), arrowYOffset);
-	} else if (orientation == Qt::Vertical) {
-		arrowStart->move(arrowXOffset, 0);
-		contents->move(0, arrowWidth);
-		arrowEnd->move(arrowXOffset, contents->geometry().bottom());
-	}
+	// anchorX = std::max(0, anchorX);
+	// anchorY = std::max(0, anchorY);
 
 	move(anchorX, anchorY);
+	update();
 	adjustSize();
 
-	style()->unpolish(this);
-	style()->polish(this);
+	/*style()->unpolish(this);
+	style()->polish(this);*/
 
-	QTimer::singleShot(1, [=] { raise(); });
+	/* Ensures this widget stays above all others */
+	QTimer::singleShot(1, [=] {
+		//
+		raise();
+	});
+
+	QTimer::singleShot(16, [=] { isUpdating = false; });
 }
