@@ -537,8 +537,8 @@ OBSBasic::OBSBasic(QWidget *parent) : OBSMainWindow(parent), undo_s(ui), ui(new 
 		"You can hold Shift when resizing a source to ignore aspect ratio. Hold Alt instead to crop the source.");
 
 	newPopup3->setAnchorTarget(ui->centralwidget);
-	newPopup3->setAnchorTo(Anchor::BottomLeft);
-	newPopup3->setAnchorFrom(Anchor::BottomLeft);
+	newPopup3->setAnchorTo(Anchor::BottomCenter);
+	newPopup3->setAnchorFrom(Anchor::TopCenter);
 	newPopup3->setOrientation(Qt::Vertical);
 }
 

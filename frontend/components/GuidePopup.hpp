@@ -64,7 +64,12 @@ class GuidePopup : public QFrame {
 	Anchor::Point anchorFrom = Anchor::TopLeft;
 	Anchor::Point anchorTo = Anchor::TopRight;
 
+	QPoint calculateOffset(Anchor::Point anchorFrom);
+	bool needsHorizontalFlip(const QPoint &pos, const QRect &screen);
+	bool needsVerticalFlip(const QPoint &pos, const QRect &screen);
+
 	bool isUpdating = false;
+	QTimer *queuedUpdate;
 	void updateVisibility();
 	void updatePosition();
 
