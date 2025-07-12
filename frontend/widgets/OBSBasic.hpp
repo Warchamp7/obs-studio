@@ -26,6 +26,7 @@
 #include <utility/OBSCanvas.hpp>
 #include <utility/VCamConfig.hpp>
 #include <utility/platform.hpp>
+#include <utility/PreviewProgramSizeObserver.hpp>
 #include <utility/undo_stack.hpp>
 
 #include <obs-frontend-internal.hpp>
@@ -1417,6 +1418,7 @@ private:
 	int programX = 0, programY = 0;
 	int programCX = 0, programCY = 0;
 	float programScale = 0.0f;
+	QPointer<PreviewProgramSizeObserver> sizeObserver;
 
 	void CreateProgramDisplay();
 	void CreateProgramOptions();
