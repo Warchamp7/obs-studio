@@ -472,6 +472,9 @@ private:
 	void dragMoveEvent(QDragMoveEvent *event) override;
 	void dropEvent(QDropEvent *event) override;
 
+signals:
+	void sourceUuidDropped(QString uuid);
+
 	/* -------------------------------------
 	 * MARK: - OBSBasic_Hotkeys
 	 * -------------------------------------

@@ -17,10 +17,13 @@
 
 #include "display-helpers.hpp"
 #include "ThumbnailManager.hpp"
+#include <utility/ScreenshotObj.hpp>
 
 #include <QImageWriter>
 
-#define UPDATE_INTERVAL 100
+#define UPDATE_INTERVAL 50
+#define THROTTLE_LIMIT 10
+#define STALE_SECONDS 60
 
 ThumbnailManager::ThumbnailManager()
 {
@@ -35,7 +38,11 @@ ThumbnailManager::ThumbnailManager()
 	updateTimer->start(UPDATE_INTERVAL);
 }
 
-ThumbnailManager::~ThumbnailManager() {}
+ThumbnailManager::~ThumbnailManager()
+{
+	updateTimer->stop();
+	disconnect(updateTimer, &QTimer::timeout, this, &ThumbnailManager::updateTick);
+}
 
 QPixmap ThumbnailManager::getThumbnail(OBSSource source)
 {
@@ -71,7 +78,7 @@ void ThumbnailManager::sourceAdded(OBSSource source)
 	std::string uuid = obs_source_get_uuid(source);
 	ThumbnailItem newEntry = {uuid, {}, QPixmap()};
 
-	thumbnails.insert({uuid, newEntry});
+	thumbnails.emplace(uuid, newEntry);
 }
 
 void ThumbnailManager::sourceRemoved(OBSSource source)
@@ -91,81 +98,140 @@ void ThumbnailManager::updateTick()
 		return;
 	}
 
-	std::string uuid;
-	ThumbnailItem item;
+	if (updateThrottle > 0) {
+		updateThrottle--;
+		return;
+	}
+
+	/* updateTick() is called every UPDATE_INTERVAL ms but will only run every THROTTLE_LIMIT ticks.
+	 * This value decrements every tick and is explicitly set to 0 to force a render without throttling.
+	 * This is used for when sources have no preview at all yet, or recently became visible and are out of date.
+	 */
+	updateThrottle = THROTTLE_LIMIT;
+
+	ThumbnailItem oldestItem;
 
 	bool doUpdate = false;
 
 	auto steadyNow = steady_clock::now();
+	long long lastUpdateLimit = STALE_SECONDS * 1000;
 
-	for (auto &entry : thumbnails) {
-		uuid = entry.first;
-		item = entry.second;
+	for (auto it = thumbnails.begin(); it != thumbnails.end();) {
+		ThumbnailItem entry = it->second;
 
-		OBSSourceAutoRelease source = obs_get_source_by_uuid(item.uuid.c_str());
+		OBSSourceAutoRelease source = obs_get_source_by_uuid(entry.uuid.c_str());
 		if (!source) {
-			thumbnails.erase(uuid);
+			it = thumbnails.erase(it);
 			continue;
 		}
+		it++;
 
 		const char *name = obs_source_get_name(source);
 
 		bool isShowing = obs_source_showing(source);
+		bool isScene = obs_source_is_scene(source);
 		uint32_t flags = obs_source_get_output_flags(source);
-
-		bool updatedRecently = false;
-		long long lastUpdateDuration = 0;
-
-		long long previewOutOfDate = std::max((long long)(5000 + (UPDATE_INTERVAL * thumbnails.size())), 30LL * 1000);
-
-		if (item.lastUpdate) {
-			lastUpdateDuration = duration_cast<milliseconds>(steadyNow - *item.lastUpdate).count();
-			if (lastUpdateDuration < previewOutOfDate) {
-				updatedRecently = true;
-			}
-		}
 
 		if ((flags & OBS_SOURCE_VIDEO) == 0) {
 			continue;
 		}
 
-		if (!item.lastUpdate.has_value()) {
-			// Force update previews for newly added entries
-			blog(LOG_INFO, "[ThumbnailManager] Update source with no update yet '%s'", name);
+		if (oldestItem.isNull()) {
+			oldestItem = entry;
+		}
 
-			doUpdate = true;
+		const char *id = obs_source_get_unversioned_id(source);
+
+		/* Force updates for items with no update yet */
+		if (!entry.lastUpdate.has_value()) {
+			updateThrottle = 0;
+			oldestItem = entry;
 			break;
-		} else if (!updatedRecently) {
-			const char *id = obs_source_get_unversioned_id(source);
+		}
 
-			if (isShowing) {
-				blog(LOG_INFO,
-				     "[ThumbnailManager] Source '%s' last updated %.2f seconds ago. Limit: %.2fs", name,
-				     (float)lastUpdateDuration / 1000, (float)previewOutOfDate / 1000);
+		/* Force updates for items with no image that are showing now */
+		if (entry.pixmap.isNull() && isShowing) {
+			updateThrottle = 0;
+			oldestItem = entry;
+			break;
+		}
 
-				doUpdate = true;
-				break;
-			} else if (strcmp(id, "scene") == 0) {
-				// Always update previews for scenes even when not active
-				blog(LOG_INFO,
-				     "[ThumbnailManager] Scene '%s' last updated %.2f seconds ago. Limit: %.2fs", name,
-				     (float)lastUpdateDuration / 1000, (float)previewOutOfDate / 1000);
+		long long timeSinceEntryUpdate = duration_cast<milliseconds>(steadyNow - *entry.lastUpdate).count();
+		if (timeSinceEntryUpdate < lastUpdateLimit) {
+			continue;
+		}
 
-				doUpdate = true;
-				break;
-			}
+		if (!isShowing && !isScene) {
+			continue;
+		}
+
+		bool entryIsOlder = (steadyNow - *entry.lastUpdate) > (steadyNow - *oldestItem.lastUpdate);
+		if (timeSinceEntryUpdate > lastUpdateLimit && entryIsOlder) {
+			oldestItem = entry;
+			continue;
 		}
 	}
 
-	if (!doUpdate) {
+	if (oldestItem.isNull()) {
 		return;
 	}
 
+	OBSSourceAutoRelease source = obs_get_source_by_uuid(oldestItem.uuid.c_str());
+	const char *name = obs_source_get_name(source); // DEBUG: RemoveMe
+	if (oldestItem.lastUpdate.has_value()) {
+		long long updateTime = duration_cast<milliseconds>(steadyNow - *oldestItem.lastUpdate).count();
+		if (updateTime < lastUpdateLimit) {
+			return;
+		}
+
+		if (updateTime > lastUpdateLimit * 2) {
+			/* Update thumbnails faster when the oldest item is more than double the state limit */
+			updateThrottle = std::min(updateThrottle, 3);
+		}
+
+		blog(LOG_INFO, "[ThumbnailManager] Source '%s' last updated %.2f seconds ago", name,
+		     (float)updateTime / 1000);
+	} else {
+		blog(LOG_INFO, "[ThumbnailManager] Update source with no update yet '%s'", name);
+	}
+
+	/*
 	QPixmap pixmap = generateThumbnail(texrender, item.uuid, !item.lastUpdate.has_value());
 	if (!pixmap.isNull()) {
 		thumbnails[uuid].pixmap = pixmap;
 		thumbnails[uuid].lastUpdate = steadyNow;
 	}
+	*/
+
+	/* Using Screenshot Class Test */
+	QPixmap pixmap;
+	thumbnails[oldestItem.uuid].pixmap = pixmap;
+	thumbnails[oldestItem.uuid].lastUpdate = steadyNow;
+	if (source) {
+		uint32_t sourceWidth = obs_source_get_width(source);
+		uint32_t sourceHeight = obs_source_get_height(source);
+
+		if (sourceWidth == 0 || sourceHeight == 0) {
+			return;
+		}
+
+		auto obj = new ScreenshotObj(source);
+		obj->setSaveToFile(false);
+		obj->setSize(320, 180);
+
+		connect(obj, &ScreenshotObj::imageReady, this, [=](QImage image) {
+			QPixmap pixmap;
+			if (!image.isNull()) {
+				pixmap = QPixmap::fromImage(image);
+			}
+
+			auto updateTime = steady_clock::now();
+			thumbnails[oldestItem.uuid].pixmap = pixmap;
+			thumbnails[oldestItem.uuid].lastUpdate = updateTime;
+		});
+	}
+
+	/* --------------------------- */
 }
 
 QPixmap ThumbnailManager::generateThumbnail(gs_texrender_t *texrender, std::string uuid, bool forceShow)

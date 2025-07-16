@@ -30,6 +30,8 @@ target_sources(
     components/DisplayCaptureToolbar.cpp
     components/DisplayCaptureToolbar.hpp
     components/EditWidget.hpp
+    components/FlowFrame.cpp
+    components/FlowFrame.hpp
     components/FlowLayout.cpp
     components/FlowLayout.hpp
     components/FocusList.cpp

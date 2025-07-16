@@ -17,7 +17,9 @@
 
 #include "SourceSelectButton.hpp"
 
+#include <QDrag>
 #include <QFrame>
+#include <QMimeData>
 #include <QPainter>
 #include <QStyleOptionButton>
 
@@ -81,11 +83,12 @@ SourceSelectButton::SourceSelectButton(obs_source_t *source_, QWidget *parent) :
 	}
 
 	layout->addWidget(image);
-
 	layout->addWidget(label);
 
 	button->setFixedSize(width(), height());
 	button->move(0, 0);
+
+	setFocusProxy(button);
 }
 
 SourceSelectButton::~SourceSelectButton() {}
@@ -114,4 +117,35 @@ void SourceSelectButton::moveEvent(QMoveEvent *event)
 
 	button->setFixedSize(width(), height());
 	button->move(0, 0);
+}
+
+void SourceSelectButton::mousePressEvent(QMouseEvent *event)
+{
+	if (event->button() == Qt::LeftButton) {
+		dragStartPosition = event->pos();
+	}
+
+	QFrame::mousePressEvent(event);
+}
+
+void SourceSelectButton::mouseMoveEvent(QMouseEvent *event)
+{
+	if (!(event->buttons() & Qt::LeftButton)) {
+		return;
+	}
+
+	if ((event->pos() - dragStartPosition).manhattanLength() < QApplication::startDragDistance()) {
+		return;
+	}
+
+	// Prepare the data
+	QMimeData *mimeData = new QMimeData;
+	std::string uuid = obs_source_get_uuid(source);
+	mimeData->setData("application/x-obs-source-uuid", uuid.c_str());
+
+	// Create the drag
+	QDrag *drag = new QDrag(this);
+	drag->setMimeData(mimeData);
+	drag->setPixmap(this->grab());
+	drag->exec(Qt::CopyAction);
 }

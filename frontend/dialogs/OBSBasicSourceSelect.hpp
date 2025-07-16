@@ -63,24 +63,34 @@ private:
 	void getSourceTypes();
 	void setSelectedSourceType(QListWidgetItem *item);
 
-	SourceSelectButton *selectedSource = nullptr;
+	int lastSelectedIndex = -1;
+	std::vector<SourceSelectButton *> selectedItems;
 	void setSelectedSource(SourceSelectButton *button);
+	void addSelectedItem(SourceSelectButton *button);
+	void removeSelectedItem(SourceSelectButton *button);
+	void clearSelectedItems();
 
 	void createNewSource();
+	void addExistingSource(QString name, bool visible);
+
+	void mousePressEvent(QMouseEvent *event);
+	void mouseMoveEvent(QMouseEvent *event);
 
 signals:
 	void sourcesUpdated();
+	void selectedItemsChanged();
 
-private slots:
+public slots:
 	void on_createNewSource_clicked(bool checked);
-	void addExistingSource();
+	void addSelectedSources();
 
 	// void SourceAdded(OBSSource source);
 	// void SourceRemoved(OBSSource source);
 	void sourceTypeSelected(QListWidgetItem *current, QListWidgetItem *previous);
 	void sourceTypeClicked(QListWidgetItem *clicked);
 
-	void sourceButtonClicked(QAbstractButton *button);
+	void sourceButtonToggled(QAbstractButton *button, bool checked);
+	void sourceDropped(QString uuid);
 
 public:
 	OBSBasicSourceSelect(OBSBasic *parent, undo_stack &undo_s);

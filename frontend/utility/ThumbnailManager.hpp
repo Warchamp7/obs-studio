@@ -29,6 +29,8 @@ struct ThumbnailItem {
 	std::string uuid;
 	std::optional<steady_clock::time_point> lastUpdate;
 	QPixmap pixmap;
+
+	bool isNull() { return uuid.empty(); }
 };
 
 class ThumbnailManager : public QObject {
@@ -50,6 +52,7 @@ private:
 	static void obsSourceAdded(void *param, calldata_t *calldata);
 	static void obsSourceRemoved(void *param, calldata_t *calldata);
 
+	int updateThrottle = 0;
 	void updateTick();
 
 	gs_texrender_t *texrender;

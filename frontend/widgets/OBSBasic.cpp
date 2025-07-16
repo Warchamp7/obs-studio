@@ -1350,6 +1350,7 @@ OBSBasic::~OBSBasic()
 	delete trayMenu;
 	delete programOptions;
 	delete program;
+	delete thumbnailManager;
 
 	/* XXX: any obs data must be released before calling obs_shutdown.
 	 * currently, we can't automate this with C++ RAII because of the

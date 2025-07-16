@@ -17,40 +17,21 @@
 
 #pragma once
 
-// #include <widgets/OBSSourceWidget.hpp>
+#include "FlowLayout.hpp"
 
-#include <QPushButton>
-#include <QLabel>
-#include <QVBoxLayout>
+#include <QFrame>
 
-#include <obs.h>
-
-class SourceSelectButton : public QFrame {
+class FlowFrame : public QFrame {
 	Q_OBJECT
 
 public:
-	SourceSelectButton(obs_source_t *source, QWidget *parent = nullptr);
-	~SourceSelectButton();
+	explicit FlowFrame(QWidget *parent = nullptr);
 
-	QPointer<QPushButton> getButton();
-	QString text();
+	FlowLayout *flowLayout() const { return layout; }
 
 protected:
-	void resizeEvent(QResizeEvent *event) override;
-	void moveEvent(QMoveEvent *event) override;
-	void mousePressEvent(QMouseEvent *event) override;
-	void mouseMoveEvent(QMouseEvent *event) override;
+	void keyPressEvent(QKeyEvent *event) override;
 
 private:
-	obs_source_t *source;
-
-	QPushButton *button = nullptr;
-	QVBoxLayout *layout = nullptr;
-	QLabel *label = nullptr;
-
-	QPoint dragStartPosition;
-
-	// OBSSourceWidget *sourceWidget;
-
-private slots:
+	FlowLayout *layout;
 };

@@ -16,6 +16,8 @@
 ******************************************************************************/
 
 #include "OBSBasicSourceSelect.hpp"
+#include <components/FlowFrame.hpp>
+#include <components/FlowLayout.hpp>
 
 #include <QMessageBox>
 #include <QList>
@@ -181,10 +183,9 @@ OBSBasicSourceSelect::OBSBasicSourceSelect(OBSBasic *parent, undo_stack &undo_s)
 
 	ui->setupUi(this);
 
-	existingFlowLayout = new FlowLayout();
+	existingFlowLayout = ui->existingListFrame->flowLayout();
 	existingFlowLayout->setContentsMargins(0, 0, 0, 0);
 	existingFlowLayout->setSpacing(0);
-	ui->existingListFrame->setLayout(existingFlowLayout);
 
 	/* The scroll viewport is not accessible via Designer, so we have to disable autoFillBackground here.
 	 * 
@@ -204,7 +205,16 @@ OBSBasicSourceSelect::OBSBasicSourceSelect(OBSBasic *parent, undo_stack &undo_s)
 	connect(ui->lineEdit, &QLineEdit::returnPressed, this, &OBSBasicSourceSelect::createNewSource);
 	connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
-	connect(ui->addExistingButton, &QAbstractButton::clicked, this, &OBSBasicSourceSelect::addExistingSource);
+	connect(ui->addExistingButton, &QAbstractButton::clicked, this, &OBSBasicSourceSelect::addSelectedSources);
+	connect(this, &OBSBasicSourceSelect::selectedItemsChanged, this, [=]() {
+		//
+		ui->addExistingButton->setEnabled(selectedItems.size() > 0);
+		if (selectedItems.size() > 0) {
+			ui->addExistingButton->setText(QTStr("Add %1 Existing").arg(selectedItems.size()));
+		} else {
+			ui->addExistingButton->setText("Add Existing");
+		}
+	});
 
 	App()->DisableHotkeys();
 }
@@ -225,6 +235,7 @@ void OBSBasicSourceSelect::getSources()
 void OBSBasicSourceSelect::updateExistingSources(int limit)
 {
 	sourceButtons = new QButtonGroup(this);
+	sourceButtons->setExclusive(false);
 
 	int count = 0;
 	for (obs_source_t *source : sources) {
@@ -247,7 +258,7 @@ void OBSBasicSourceSelect::updateExistingSources(int limit)
 		}
 	}
 
-	connect(sourceButtons, &QButtonGroup::buttonClicked, this, &OBSBasicSourceSelect::sourceButtonClicked);
+	connect(sourceButtons, &QButtonGroup::buttonToggled, this, &OBSBasicSourceSelect::sourceButtonToggled);
 
 	ui->existingListFrame->adjustSize();
 }
@@ -277,7 +288,7 @@ bool OBSBasicSourceSelect::enumGroupsCallback(void *data, obs_source_t *source)
 		obs_sceneitem_t *existing = obs_scene_get_group(scene, name);
 		if (!existing) {
 			QPushButton *button = new QPushButton(name);
-			connect(button, &QPushButton::clicked, window, &OBSBasicSourceSelect::addExistingSource);
+			connect(button, &QPushButton::clicked, window, &OBSBasicSourceSelect::addSelectedSources);
 			//window->ui->existingListFrame->layout()->addWidget(button);
 		}
 	}
@@ -346,7 +357,8 @@ void OBSBasicSourceSelect::getSourceTypes()
 
 void OBSBasicSourceSelect::setSelectedSourceType(QListWidgetItem *item)
 {
-	QLayout *layout = ui->existingListFrame->layout();
+	setSelectedSource(nullptr);
+	QLayout *layout = ui->existingListFrame->flowLayout();
 
 	// Clear existing buttons when switching types
 	QLayoutItem *child = nullptr;
@@ -369,8 +381,6 @@ void OBSBasicSourceSelect::setSelectedSourceType(QListWidgetItem *item)
 	if (type.compare(sourceTypeId) == 0) {
 		return;
 	}
-
-	setSelectedSource(nullptr);
 
 	ui->createNewFrame->setVisible(true);
 
@@ -433,21 +443,126 @@ void OBSBasicSourceSelect::OBSSourceRemoved(void *data, calldata_t *calldata)
 	QMetaObject::invokeMethod(window, "SourceRemoved", Q_ARG(OBSSource, source));
 }
 
-void OBSBasicSourceSelect::sourceButtonClicked(QAbstractButton *button)
+void OBSBasicSourceSelect::sourceButtonToggled(QAbstractButton *button, bool checked)
 {
 	SourceSelectButton *buttonParent = dynamic_cast<SourceSelectButton *>(button->parentWidget());
-	if (buttonParent) {
-		setSelectedSource(buttonParent);
+
+	Qt::KeyboardModifiers modifiers = QGuiApplication::keyboardModifiers();
+	bool ctrlDown = (modifiers & Qt::ControlModifier);
+	bool shiftDown = (modifiers & Qt::ShiftModifier);
+
+	if (!buttonParent) {
+		clearSelectedItems();
+		return;
+	}
+
+	int selectedIndex = existingFlowLayout->indexOf(buttonParent);
+
+	if (ctrlDown && !shiftDown) {
+		if (checked) {
+			addSelectedItem(buttonParent);
+		} else {
+			removeSelectedItem(buttonParent);
+		}
+
+		lastSelectedIndex = existingFlowLayout->indexOf(buttonParent);
+		return;
+	} else if (shiftDown) {
+		if (!ctrlDown) {
+			clearSelectedItems();
+		}
+		sourceButtons->blockSignals(true);
+		int start = std::min(selectedIndex, lastSelectedIndex);
+		int end = std::max(selectedIndex, lastSelectedIndex);
+		for (int i = start; i <= end; i++) {
+			auto item = existingFlowLayout->itemAt(i);
+			if (!item) {
+				continue;
+			}
+
+			auto widget = item->widget();
+			if (!widget) {
+				continue;
+			}
+
+			auto entry = dynamic_cast<SourceSelectButton *>(widget);
+			if (entry) {
+				entry->getButton()->setChecked(true);
+				addSelectedItem(entry);
+			}
+		}
+		sourceButtons->blockSignals(false);
 	} else {
-		setSelectedSource(nullptr);
+		lastSelectedIndex = existingFlowLayout->indexOf(buttonParent);
+
+		bool reselectItem = selectedItems.size() > 1;
+		clearSelectedItems();
+		if (checked) {
+			addSelectedItem(buttonParent);
+		} else if (reselectItem) {
+			button->setChecked(true);
+			addSelectedItem(buttonParent);
+		}
+	}
+}
+
+void OBSBasicSourceSelect::sourceDropped(QString uuid)
+{
+	OBSSourceAutoRelease source = obs_get_source_by_uuid(uuid.toStdString().c_str());
+	if (source) {
+		const char *name = obs_source_get_name(source);
+		bool visible = ui->sourceVisible->isChecked();
+
+		addExistingSource(name, visible);
 	}
 }
 
 void OBSBasicSourceSelect::setSelectedSource(SourceSelectButton *button)
 {
-	selectedSource = button;
+	clearSelectedItems();
+	addSelectedItem(button);
+}
 
-	ui->addExistingButton->setEnabled(selectedSource != nullptr);
+void OBSBasicSourceSelect::addSelectedItem(SourceSelectButton *button)
+{
+	if (button == nullptr) {
+		return;
+	}
+
+	auto it = std::find(selectedItems.begin(), selectedItems.end(), button);
+	if (it == selectedItems.end()) {
+		selectedItems.push_back(button);
+		emit selectedItemsChanged();
+	}
+}
+
+void OBSBasicSourceSelect::removeSelectedItem(SourceSelectButton *button)
+{
+	if (button == nullptr) {
+		return;
+	}
+
+	auto it = std::find(selectedItems.begin(), selectedItems.end(), button);
+	if (it != selectedItems.end()) {
+		auto item = *it;
+		selectedItems.erase(it);
+		emit selectedItemsChanged();
+	}
+}
+
+void OBSBasicSourceSelect::clearSelectedItems()
+{
+	if (selectedItems.size() == 0) {
+		return;
+	}
+
+	sourceButtons->blockSignals(true);
+	for (auto &item : selectedItems) {
+		item->getButton()->setChecked(false);
+	}
+	sourceButtons->blockSignals(false);
+	selectedItems.clear();
+	emit selectedItemsChanged();
 }
 
 void OBSBasicSourceSelect::createNewSource()
@@ -498,22 +613,9 @@ void OBSBasicSourceSelect::createNewSource()
 	close();
 }
 
-void OBSBasicSourceSelect::on_createNewSource_clicked(bool checked)
+void OBSBasicSourceSelect::addExistingSource(QString name, bool visible)
 {
-	UNUSED_PARAMETER(checked);
-	createNewSource();
-}
-
-void OBSBasicSourceSelect::addExistingSource()
-{
-	if (selectedSource == nullptr) {
-		return;
-	}
-
-	bool visible = ui->sourceVisible->isChecked();
-
-	QString source_name = selectedSource->text();
-	OBSSourceAutoRelease source = obs_get_source_by_name(source_name.toStdString().c_str());
+	OBSSourceAutoRelease source = obs_get_source_by_name(name.toStdString().c_str());
 	if (source) {
 		AddExisting(source.Get(), visible, false, nullptr, nullptr, nullptr, nullptr);
 
@@ -538,14 +640,38 @@ void OBSBasicSourceSelect::addExistingSource()
 			obs_scene_release(scene);
 		};
 
-		auto redo = [scene_name, main, source_name, visible](const std::string &) {
+		auto redo = [scene_name, main, name, visible](const std::string &) {
 			obs_source_t *scene_source = obs_get_source_by_name(scene_name);
 			main->SetCurrentScene(scene_source, true);
 			obs_source_release(scene_source);
-			AddExisting(QT_TO_UTF8(source_name), visible, false, nullptr, nullptr, nullptr, nullptr);
+			AddExisting(QT_TO_UTF8(name), visible, false, nullptr, nullptr, nullptr, nullptr);
 		};
 
-		undo_s.add_action(QTStr("Undo.Add").arg(source_name), undo, redo, "", "");
+		undo_s.add_action(QTStr("Undo.Add").arg(name), undo, redo, "", "");
+	}
+}
+
+void OBSBasicSourceSelect::mousePressEvent(QMouseEvent *event) {}
+
+void OBSBasicSourceSelect::mouseMoveEvent(QMouseEvent *event) {}
+
+void OBSBasicSourceSelect::on_createNewSource_clicked(bool checked)
+{
+	UNUSED_PARAMETER(checked);
+	createNewSource();
+}
+
+void OBSBasicSourceSelect::addSelectedSources()
+{
+	if (selectedItems.size() == 0) {
+		return;
+	}
+
+	bool visible = ui->sourceVisible->isChecked();
+
+	for (auto &item : selectedItems) {
+		QString sourceName = item->text();
+		addExistingSource(sourceName, visible);
 	}
 	close();
 }

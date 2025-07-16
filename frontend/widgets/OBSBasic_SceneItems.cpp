@@ -782,6 +782,7 @@ void OBSBasic::AddSourceDialog()
 	addWindow->show();
 
 	addWindow->setAttribute(Qt::WA_DeleteOnClose, true);
+	connect(this, &OBSBasic::sourceUuidDropped, addWindow, &OBSBasicSourceSelect::sourceDropped);
 }
 
 void OBSBasic::on_actionAddSource_triggered()
