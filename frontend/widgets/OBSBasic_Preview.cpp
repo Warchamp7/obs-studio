@@ -189,7 +189,7 @@ void OBSBasic::RenderMain(void *data, uint32_t, uint32_t)
 
 	window->ui->preview->DrawSceneEditing();
 
-	if (window->drawSpacingHelpers)
+	if (window->previewSpacingHelpersEnabled)
 		window->ui->preview->drawSpacingHelpers();
 
 	window->ui->preview->drawSnapGuides();
