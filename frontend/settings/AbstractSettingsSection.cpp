@@ -511,11 +511,11 @@ void AbstractSettingsSection::bindItemUpdates(SettingsItem *item, QSpinBox *widg
 					      std::function<QVariant(QVariant)> transform)
 {
 	connect(item, &SettingsItem::valueChanged, widget, [this, widget, transform](QVariant newValue) {
-		QVariant widgetValue = transform(newValue);
+		QVariant itemValue = transform(newValue);
 
-		if (widgetValue.canConvert<int>()) {
+		if (itemValue.canConvert<int>()) {
 			widget->blockSignals(true);
-			widget->setValue(widgetValue.toInt());
+			widget->setValue(itemValue.toInt());
 			widget->blockSignals(false);
 		}
 	});
@@ -530,11 +530,11 @@ void AbstractSettingsSection::bindItemUpdates(SettingsItem *item, QDoubleSpinBox
 					      std::function<QVariant(QVariant)> transform)
 {
 	connect(item, &SettingsItem::valueChanged, widget, [this, widget, transform](QVariant newValue) {
-		QVariant widgetValue = transform(newValue);
+		QVariant itemValue = transform(newValue);
 
-		if (widgetValue.canConvert<double>()) {
+		if (itemValue.canConvert<double>()) {
 			widget->blockSignals(true);
-			widget->setValue(widgetValue.toDouble());
+			widget->setValue(itemValue.toDouble());
 			widget->blockSignals(false);
 		}
 	});
@@ -549,12 +549,12 @@ void AbstractSettingsSection::bindItemUpdates(SettingsItem *item, QComboBox *wid
 					      std::function<QVariant(QVariant)> transform)
 {
 	connect(item, &SettingsItem::valueChanged, widget, [this, widget, transform](QVariant newValue) {
-		QVariant widgetValue = transform(newValue);
+		QVariant itemValue = transform(newValue);
 
-		int index = widget->findData(widgetValue);
+		int index = widget->findData(itemValue);
 
 		if (index == -1) {
-			index = widget->findText(widgetValue.toString());
+			index = widget->findText(itemValue.toString());
 		}
 
 		if (index) {
@@ -574,11 +574,11 @@ void AbstractSettingsSection::bindItemUpdates(SettingsItem *item, QCheckBox *wid
 					      std::function<QVariant(QVariant)> transform)
 {
 	connect(item, &SettingsItem::valueChanged, widget, [this, widget, transform](QVariant newValue) {
-		QVariant widgetValue = transform(newValue);
+		QVariant itemValue = transform(newValue);
 
-		if (widgetValue.canConvert<bool>()) {
+		if (itemValue.canConvert<bool>()) {
 			widget->blockSignals(true);
-			widget->setChecked(widgetValue.toBool());
+			widget->setChecked(itemValue.toBool());
 			widget->blockSignals(false);
 		}
 	});
@@ -594,11 +594,11 @@ void AbstractSettingsSection::bindItemUpdates(SettingsItem *item, QSlider *widge
 {
 	connect(item, &SettingsItem::valueChanged, widget, [this, widget, transform](QVariant newValue) {
 		bool valid;
-		int widgetValue = transform(newValue).toInt(&valid);
+		int itemValue = transform(newValue).toInt(&valid);
 
 		if (valid) {
 			widget->blockSignals(true);
-			widget->setValue(widgetValue);
+			widget->setValue(itemValue);
 			widget->blockSignals(false);
 		}
 	});

@@ -53,6 +53,7 @@ class VideoWidget : public AbstractSettingsPage {
 	void loadFPSTypeOptions();
 
 	void resetDownscales(uint32_t cx, uint32_t cy, bool ignoreAllSignals);
+	void updateBaseAspectRatioText();
 	void updateOutputAspectRatioText();
 
 public:

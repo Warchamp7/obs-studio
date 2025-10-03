@@ -179,6 +179,205 @@ void VideoWidget::initialLoad()
 	loadResolutionLists();
 	loadDownscaleFilters();
 
+	auto baseWidth = section().findSettingsItem("BaseCX");
+	auto baseHeight = section().findSettingsItem("BaseCY");
+	if (baseWidth && baseHeight) {
+		// Load current value into widget
+		int widthValue = manager().currentValue("Video", "BaseCX").toInt();
+		int heightValue = manager().currentValue("Video", "BaseCY").toInt();
+
+		std::string baseResolution = resolutionString(widthValue, heightValue);
+
+		int index = ui->baseResolution->findData(QString::fromStdString(baseResolution));
+
+		if (index == -1) {
+			index = ui->baseResolution->findText(QString::fromStdString(baseResolution));
+		}
+
+		if (index != -1) {
+			ui->baseResolution->blockSignals(true);
+			ui->baseResolution->setCurrentIndex(index);
+			ui->baseResolution->blockSignals(false);
+		}
+
+		// Connect widget updates
+		connect(ui->baseResolution, &QComboBox::currentIndexChanged, baseWidth,
+			[this, baseResolution, baseWidth, baseHeight](int index) {
+				uint32_t width = 0;
+				uint32_t height = 0;
+
+				QVariant data = ui->baseResolution->itemText(index);
+
+				if (!data.isValid()) {
+					return;
+				}
+
+				std::string dataStr = data.toString().toStdString();
+
+				validateResolutionString(dataStr, width, height);
+
+				if (!width || !height) {
+					return;
+				}
+
+				baseWidth->setPending((int)width);
+				baseHeight->setPending((int)height);
+			});
+
+		connect(ui->baseResolution, &QComboBox::editTextChanged, baseWidth,
+			[this, baseResolution, baseWidth, baseHeight](QString text) {
+				uint32_t width = 0;
+				uint32_t height = 0;
+
+				std::string dataStr = text.toStdString();
+				validateResolutionString(dataStr, width, height);
+
+				if (!width || !height) {
+					return;
+				}
+
+				baseWidth->setPending((int)width);
+				baseHeight->setPending((int)height);
+			});
+
+		// Connect SettingsItem updates
+		connect(baseWidth, &SettingsItem::valueChanged, ui->baseResolution, [this](QVariant newValue) {
+			int widthValue = manager().currentValue("Video", "BaseCX").toInt();
+			int heightValue = manager().currentValue("Video", "BaseCY").toInt();
+
+			std::string baseResolution = resolutionString(widthValue, heightValue);
+
+			int index = ui->baseResolution->findData(QString::fromStdString(baseResolution));
+
+			if (index == -1) {
+				index = ui->baseResolution->findText(QString::fromStdString(baseResolution));
+			}
+
+			if (index) {
+				ui->baseResolution->blockSignals(true);
+				ui->baseResolution->setCurrentIndex(index);
+				ui->baseResolution->blockSignals(false);
+			}
+		});
+	}
+
+	auto outputWidth = section().findSettingsItem("OutputCX");
+	auto outputHeight = section().findSettingsItem("OutputCY");
+	if (outputWidth && outputHeight) {
+		// Load current value into widget
+		int widthValue = manager().currentValue("Video", "OutputCX").toInt();
+		int heightValue = manager().currentValue("Video", "OutputCY").toInt();
+
+		std::string outputResolution = resolutionString(widthValue, heightValue);
+
+		int index = ui->outputResolution->findData(QString::fromStdString(outputResolution));
+
+		if (index == -1) {
+			index = ui->outputResolution->findText(QString::fromStdString(outputResolution));
+		}
+
+		if (index != -1) {
+			ui->outputResolution->blockSignals(true);
+			ui->outputResolution->setCurrentIndex(index);
+			ui->outputResolution->blockSignals(false);
+		}
+
+		// Connect widget updates
+
+
+		connect(ui->outputResolution, &QComboBox::currentIndexChanged, outputWidth,
+			[this, outputResolution, outputWidth, outputHeight](int index) {
+				uint32_t width = 0;
+				uint32_t height = 0;
+
+				QVariant data = ui->outputResolution->itemText(index);
+
+				if (!data.isValid()) {
+					return;
+				}
+
+				std::string dataStr = data.toString().toStdString();
+				validateResolutionString(dataStr, width, height);
+
+				if (!width || !height) {
+					return;
+				}
+
+				outputWidth->setPending((int)width);
+				outputHeight->setPending((int)height);
+			});
+
+		connect(ui->outputResolution, &QComboBox::editTextChanged, outputWidth,
+			[this, outputResolution, outputWidth, outputHeight](QString text) {
+				uint32_t width = 0;
+				uint32_t height = 0;
+
+				std::string dataStr = text.toStdString();
+				validateResolutionString(dataStr, width, height);
+
+				if (!width || !height) {
+					return;
+				}
+
+				outputWidth->setPending((int)width);
+				outputHeight->setPending((int)height);
+			});
+
+		// Connect SettingsItem updates
+		connect(outputWidth, &SettingsItem::valueChanged, ui->outputResolution, [this](QVariant newValue) {
+			int widthValue = manager().currentValue("Video", "OutputCX").toInt();
+			int heightValue = manager().currentValue("Video", "OutputCY").toInt();
+
+			std::string outputResolution = resolutionString(widthValue, heightValue);
+
+			int index = ui->outputResolution->findData(QString::fromStdString(outputResolution));
+
+			if (index == -1) {
+				index = ui->outputResolution->findText(QString::fromStdString(outputResolution));
+			}
+
+			if (index) {
+				ui->outputResolution->blockSignals(true);
+				ui->outputResolution->setCurrentIndex(index);
+				ui->outputResolution->blockSignals(false);
+			}
+		});
+	}
+	updateBaseAspectRatioText();
+	updateOutputAspectRatioText();
+
+	section().connectSettingWidget("ScaleType", ui->downscaleFilter);
+	auto toggleScaleType = [this]() {
+		int baseWidth = manager().currentValue("Video", "BaseCX").toInt();
+		int baseHeight = manager().currentValue("Video", "BaseCY").toInt();
+
+		int outputWidth = manager().currentValue("Video", "OutputCX").toInt();
+		int outputHeight = manager().currentValue("Video", "OutputCY").toInt();
+
+		if (baseWidth == outputWidth && baseHeight == outputHeight) {
+			ui->downscaleFilter->setEnabled(false);
+		} else {
+			ui->downscaleFilter->setEnabled(true);
+		}
+	};
+	bindChangeCallback("Video", "BaseCX", [this, toggleScaleType]() {
+		toggleScaleType();
+		updateBaseAspectRatioText();
+	});
+	bindChangeCallback("Video", "BaseCY", [this, toggleScaleType]() {
+		toggleScaleType();
+		updateBaseAspectRatioText();
+	});
+	bindChangeCallback("Video", "OutputCX", [this, toggleScaleType]() {
+		toggleScaleType();
+		updateOutputAspectRatioText();
+	});
+	bindChangeCallback("Video", "OutputCY", [this, toggleScaleType]() {
+		toggleScaleType();
+		updateOutputAspectRatioText();
+	});
+	toggleScaleType();
+
 	section().connectSettingWidget("FPSType", ui->fpsType);
 	connect(ui->fpsType, &QComboBox::currentIndexChanged, ui->fpsTypes, &QStackedWidget::setCurrentIndex);
 
@@ -249,9 +448,8 @@ void VideoWidget::loadResolutionLists()
 		uint32_t downscaleWidth = uint32_t(double(baseWidth) / scale);
 		uint32_t downscaleHeight = uint32_t(double(baseHeight) / scale);
 
-		// Round to multiple of 2
-		downscaleWidth &= 0xFFFFFFFC;
-		downscaleHeight &= 0xFFFFFFFE;
+		downscaleWidth &= 0xFFFFFFFC;  // Round to multiple of 4
+		downscaleHeight &= 0xFFFFFFFE; // Round to multiple of 2
 
 		std::string downscaleString = resolutionString(downscaleWidth, downscaleHeight);
 		ui->outputResolution->addItem(QString::fromStdString(downscaleString));
@@ -277,23 +475,6 @@ void VideoWidget::loadResolutionLists()
 		ui->outputResolution->lineEdit()->setText(QString::fromStdString(outputResolution));
 	} else {
 		ui->outputResolution->lineEdit()->setText(QString::fromStdString(bestScale));
-	}
-
-	/* Update aspect ratio labels */
-	std::tuple<int, int> baseRatio = aspect_ratio(baseWidth, baseHeight);
-	int ratioWidth = std::get<0>(baseRatio);
-	int ratioHeight = std::get<1>(baseRatio);
-
-	ui->baseAspect->setText(QTStr("AspectRatio").arg(QString::number(ratioWidth), QString::number(ratioHeight)));
-
-	validateResolutionString(outputResolution, outputWidth, outputHeight);
-	if (outputWidth && outputHeight) {
-		std::tuple<int, int> aspect = aspect_ratio(outputWidth, outputHeight);
-		ratioWidth = std::get<0>(aspect);
-		ratioHeight = std::get<1>(aspect);
-
-		ui->scaledAspect->setText(
-			QTStr("AspectRatio").arg(QString::number(ratioWidth), QString::number(ratioHeight)));
 	}
 }
 
@@ -439,21 +620,26 @@ void VideoWidget::resetDownscales(uint32_t cx, uint32_t cy, bool ignoreAllSignal
 */
 }
 
+void VideoWidget::updateBaseAspectRatioText()
+{
+	int width = manager().currentValue("Video", "BaseCX").toInt();
+	int height = manager().currentValue("Video", "BaseCY").toInt();
+
+	std::tuple<int, int> baseRatio = aspect_ratio(width, height);
+	int ratioWidth = std::get<0>(baseRatio);
+	int ratioHeight = std::get<1>(baseRatio);
+
+	ui->baseAspect->setText(QTStr("AspectRatio").arg(QString::number(ratioWidth), QString::number(ratioHeight)));
+}
+
 void VideoWidget::updateOutputAspectRatioText()
 {
-	/*
-	uint32_t newCX;
-	uint32_t newCY;
+	int width = manager().currentValue("Video", "OutputCX").toInt();
+	int height = manager().currentValue("Video", "OutputCY").toInt();
 
-	if (ConvertResText(resText, newCX, newCY) && newCX && newCY) {
-		outputCX = newCX;
-		outputCY = newCY;
+	std::tuple<int, int> baseRatio = aspect_ratio(width, height);
+	int ratioWidth = std::get<0>(baseRatio);
+	int ratioHeight = std::get<1>(baseRatio);
 
-		std::tuple<int, int> aspect = aspect_ratio(outputCX, outputCY);
-
-		ui->scaledAspect->setText(
-			QTStr("AspectRatio")
-				.arg(QString::number(std::get<0>(aspect)), QString::number(std::get<1>(aspect))));
-	}
-*/
+	ui->scaledAspect->setText(QTStr("AspectRatio").arg(QString::number(ratioWidth), QString::number(ratioHeight)));
 }
