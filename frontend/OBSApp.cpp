@@ -69,7 +69,6 @@ string lastCrashLogFile;
 
 extern bool portable_mode;
 extern bool safe_mode;
-extern bool multi;
 extern bool disable_3p_plugins;
 extern bool opt_disable_updater;
 extern bool opt_disable_missing_files_check;
@@ -882,11 +881,7 @@ OBSApp::OBSApp(int &argc, char **argv, profiler_name_store_t *store)
 #else
 	connect(qApp, &QGuiApplication::commitDataRequest, this, &OBSApp::commitData);
 #endif
-	if (multi) {
-		crashHandler_ = std::make_unique<OBS::CrashHandler>();
-	} else {
-		crashHandler_ = std::make_unique<OBS::CrashHandler>(appLaunchUUID_);
-	}
+	crashHandler_ = std::make_unique<OBS::CrashHandler>(appLaunchUUID_);
 
 	sleepInhibitor = os_inhibit_sleep_create("OBS Video/audio");
 

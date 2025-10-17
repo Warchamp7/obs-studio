@@ -60,7 +60,6 @@ bool steam = false;
 bool safe_mode = false;
 bool disable_3p_plugins = false;
 static bool unclean_shutdown = false;
-bool multi = false;
 static bool log_verbose = false;
 static bool unfiltered_log = false;
 bool opt_start_streaming = false;
@@ -552,54 +551,27 @@ static int run_program(fstream &logFile, int argc, char *argv[])
 		/* --------------------------------------- */
 		/* check and warn if already running       */
 
-		bool cancel_launch = false;
 		bool already_running = false;
 
 #ifdef _WIN32
-		RunOnceMutex rom =
+		RunOnceMutex rom = CheckIfAlreadyRunning(already_running);
+#else
+		CheckIfAlreadyRunning(already_running);
 #endif
-			CheckIfAlreadyRunning(already_running);
 
-		if (!already_running) {
-			goto run;
-		}
-
-		if (!multi) {
+#ifdef NDEBUG
+		if (already_running) {
 			QMessageBox mb(QMessageBox::Question, QTStr("AlreadyRunning.Title"),
 				       QTStr("AlreadyRunning.Text"));
-			mb.addButton(QTStr("AlreadyRunning.LaunchAnyway"), QMessageBox::YesRole);
-			QPushButton *cancelButton = mb.addButton(QTStr("Cancel"), QMessageBox::NoRole);
+			mb.setTextFormat(Qt::RichText);
+			QPushButton *cancelButton = mb.addButton(QTStr("Close"), QMessageBox::NoRole);
 			mb.setDefaultButton(cancelButton);
 
 			mb.exec();
-			cancel_launch = mb.clickedButton() == cancelButton;
-		}
 
-		if (cancel_launch)
 			return 0;
-
-		if (!created_log) {
-			create_log_file(logFile);
-			created_log = true;
 		}
-
-		if (multi) {
-			blog(LOG_INFO, "User enabled --multi flag and is now "
-				       "running multiple instances of OBS.");
-		} else {
-			blog(LOG_WARNING, "================================");
-			blog(LOG_WARNING, "Warning: OBS is already running!");
-			blog(LOG_WARNING, "================================");
-			blog(LOG_WARNING, "User is now running multiple "
-					  "instances of OBS!");
-			/* Clear unclean_shutdown flag as multiple instances
-			 * running from the same config will lead to a
-			 * false-positive detection.*/
-			unclean_shutdown = false;
-		}
-
-		/* --------------------------------------- */
-	run:
+#endif
 
 #if !defined(_WIN32) && !defined(__APPLE__) && !defined(__FreeBSD__)
 		// Mounted by termina during chromeOS linux container startup
@@ -907,17 +879,14 @@ int main(int argc, char *argv[])
 	obs_set_cmdline_args(argc, argv);
 
 	for (int i = 1; i < argc; i++) {
-		if (arg_is(argv[i], "--multi", "-m")) {
-			multi = true;
+		if (arg_is(argv[i], "--verbose", nullptr)) {
+			log_verbose = true;
 
 #if ALLOW_PORTABLE_MODE
 		} else if (arg_is(argv[i], "--portable", "-p")) {
 			portable_mode = true;
 
 #endif
-		} else if (arg_is(argv[i], "--verbose", nullptr)) {
-			log_verbose = true;
-
 		} else if (arg_is(argv[i], "--safe-mode", nullptr)) {
 			safe_mode = true;
 
