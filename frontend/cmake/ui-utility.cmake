@@ -65,6 +65,8 @@ target_sources(
     utility/StartMultiTrackVideoStreamingGuard.hpp
     utility/SurfaceEventFilter.hpp
     utility/system-info.hpp
+    utility/TooltipObserver.cpp
+    utility/TooltipObserver.hpp
     utility/undo_stack.cpp
     utility/undo_stack.hpp
     utility/VCamConfig.hpp

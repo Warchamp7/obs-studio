@@ -19,6 +19,7 @@
 
 #include <utility/OBSTheme.hpp>
 #include <widgets/OBSMainWindow.hpp>
+#include <Idian/Tooltip.hpp>
 
 #include <obs-frontend-api.h>
 #include <util/platform.h>
@@ -110,6 +111,8 @@ private:
 	QPointer<QFileSystemWatcher> themeWatcher;
 	std::unique_ptr<QStyle> invisibleCursorStyle;
 
+	idian::Tooltip *appTooltip = nullptr;
+
 	void FindThemes();
 
 	bool notify(QObject *receiver, QEvent *e) override;
@@ -157,6 +160,10 @@ public:
 	bool SetTheme(const QString &name);
 	bool IsThemeDark() const { return currentTheme ? currentTheme->isDark : false; }
 	QStyle *GetInvisibleCursorStyle();
+
+	idian::Tooltip *getTooltipWidget();
+	void useOBSTooltip(QToolBar *widget);
+	void useOBSTooltip(QWidget *widget);
 
 	void SetBranchData(const std::string &data);
 	std::vector<UpdateBranch> GetBranches();

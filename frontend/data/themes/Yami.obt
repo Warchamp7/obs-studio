@@ -2513,3 +2513,86 @@ idian--RowFrame.hover .row-buddy {
 idian--RowFrame.hover idian--ExpandButton::indicator {
     border-color: var(--grey1);
 }
+
+/* Popup widgets */
+idian--Tooltip {
+    background: var(--grey8);
+    padding: var(--padding_base) var(--padding_xlarge) var(--padding_xlarge);
+    border: 1px solid transparent;
+    border-radius: var(--border_radius);
+}
+
+idian--Tooltip QLabel {
+    font-size: var(--font_small);
+    font-weight: bold;
+}
+
+idian--GuidePopup {
+    background: var(--blue3);
+    padding: 2px;
+    border-radius: var(--border_radius);
+}
+
+idian--GuidePopup .guide-header {
+    background: var(--blue3);
+    border-top-left-radius: var(--border_radius);
+    border-top-right-radius: var(--border_radius);
+}
+
+idian--GuidePopup .guide-header QLabel {
+    padding: var(--padding_large) var(--padding_base);
+    font-size: var(--font_large);
+    font-weight: bold;
+}
+
+idian--GuidePopup .guide-text {
+    background: var(--grey7);
+    padding: var(--padding_xlarge);
+    min-width: 300px;
+}
+
+idian--GuidePopup .guide-footer {    
+    background: var(--grey7);
+    padding: var(--spacing_base);
+    border-top: 1px solid var(--border_color);
+    border-bottom-left-radius: var(--border_radius);
+    border-bottom-right-radius: var(--border_radius);
+}
+
+idian--GuidePopup .guide-footer QPushButton {
+    background-color: var(--blue3);
+    border-color: var(--blue3);
+    font-weight: bold;
+    margin: 0;
+    padding: var(--padding_base) var(--padding_wide);
+    outline: none;
+}
+
+idian--GuidePopup .guide-footer QPushButton:hover {
+    background-color: var(--blue3);
+    border-color: var(--blue2);
+    color: var(--text);
+}
+
+idian--GuidePopup .guide-footer QPushButton:focus:!pressed {
+    border-color: var(--white1);
+}
+
+idian--GuidePopup .guide-footer QPushButton:pressed {
+    background-color: var(--blue5);
+}
+
+idian--GuidePopup .tooltip-close {
+    background: transparent;
+    border: none;
+    font-size: var(--font_large);
+    font-weight: bold;
+    padding: 0;
+    width: var(--input_height);
+    height: var(--input_height);
+    margin-right: var(--padding_large);
+}
+
+idian--GuidePopup .tooltip-close:hover {
+    background: var(--blue4);
+}
