@@ -1225,7 +1225,7 @@ void OBSBasic::OBSInit()
 		NewYouTubeAppDock();
 #endif
 
-	const char *dockStateStr = config_get_string(App()->GetUserConfig(), "BasicWindow", "DockState");
+	const char *dockStateStr = config_get_string(App()->GetUserConfig(), "BasicWindow", "DockState_Testing");
 
 	if (!dockStateStr) {
 		on_resetDocks_triggered(true);
@@ -1784,7 +1784,7 @@ void OBSBasic::closeEvent(QCloseEvent *event)
 
 	delete extraBrowsers;
 
-	config_set_string(App()->GetUserConfig(), "BasicWindow", "DockState", saveState().toBase64().constData());
+	config_set_string(App()->GetUserConfig(), "BasicWindow", "DockState_Testing", saveState().toBase64().constData());
 
 #ifdef BROWSER_AVAILABLE
 	if (cef)
