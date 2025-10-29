@@ -504,11 +504,12 @@ bool AudioMixer::getMixerVisibilityForControl(VolControl *control)
 {
 	OBSSource source = OBSGetStrongRef(control->weakSource());
 
+	bool isPinned = isPinnedInMixer(source);
 	bool isPreviewed = isSourcePreviewed(source);
 	bool isHidden = isHideInMixer(source);
 	bool isAudioActive = isSourceAudioActive(source);
 
-	if (isPreviewed) {
+	if (isPinned) {
 		return true;
 	}
 
@@ -517,11 +518,15 @@ bool AudioMixer::getMixerVisibilityForControl(VolControl *control)
 	}
 
 	if (!isAudioActive && showInactive) {
-		return true;
+		return !isHidden;
 	}
 
-	if (isAudioActive && !isHidden) {
-		return true;
+	if (isAudioActive) {
+		return !isHidden;
+	}
+
+	if (isPreviewed) {
+		return !isHidden;
 	}
 
 	return false;
@@ -642,32 +647,40 @@ void AudioMixer::updateVolumeLayouts()
 		bool isPinned = isPinnedInMixer(source);
 		bool isHidden = isHideInMixer(source);
 		bool isAudioActive = isSourceAudioActive(source);
+		bool isLocked = isVolumeLocked(source);
 
 		volControl->setMixerFlag(OBS::MixerStatus::Preview, isPreviewed);
 		volControl->setMixerFlag(OBS::MixerStatus::Global, isGlobal);
 		volControl->setMixerFlag(OBS::MixerStatus::Pinned, isPinned);
 		volControl->setMixerFlag(OBS::MixerStatus::Hidden, isHidden);
 		volControl->setMixerFlag(OBS::MixerStatus::Active, isAudioActive);
+		volControl->setMixerFlag(OBS::MixerStatus::Locked, isLocked);
 
 		if (isHidden) {
 			hiddenCount += 1;
 		}
 
 		if (!isGlobal) {
-			sortWeight += 10;
+			sortWeight += 20;
 		}
 
 		if (!isPinned) {
-			sortWeight += 5;
+			sortWeight += 20;
 		}
 
 		if (isHidden && keepHiddenRight) {
-			sortWeight += 5;
+			sortWeight += 20;
+
+			if (isPreviewed) {
+				sortWeight -= 10;
+			}
 		}
 
 		if (!isAudioActive && keepInactiveRight) {
-			if (!isPreviewed) {
-				sortWeight += 10;
+			sortWeight += 50;
+
+			if (isPreviewed) {
+				sortWeight -= 10;
 			}
 		}
 
