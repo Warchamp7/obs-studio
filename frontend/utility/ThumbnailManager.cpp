@@ -225,6 +225,7 @@ void ThumbnailManager::preloadThumbnail(OBSSource source, QObject *object, std::
 		obj->setSaveToFile(false);
 		obj->setSize(Thumbnail::cx, Thumbnail::cy);
 
+		QPointer<QObject> safeObject = qobject_cast<QObject *>(object);
 		connect(obj, &ScreenshotObj::imageReady, this, [=](QImage image) {
 			QPixmap pixmap;
 			if (!image.isNull()) {
@@ -232,7 +233,14 @@ void ThumbnailManager::preloadThumbnail(OBSSource source, QObject *object, std::
 			}
 			cachedThumbnails[uuid].pixmap = pixmap;
 
-			QMetaObject::invokeMethod(object, std::bind(callback, pixmap));
+			QMetaObject::invokeMethod(
+				safeObject,
+				[safeObject, callback, pixmap]() {
+					if (safeObject) {
+						callback(pixmap);
+					}
+				},
+				Qt::QueuedConnection);
 		});
 	}
 }

@@ -62,7 +62,7 @@ void FlowFrame::keyPressEvent(QKeyEvent *event)
 	case Qt::Key_Down:
 	case Qt::Key_Left:
 	case Qt::Key_Up: {
-		/* Find next widget in the given direction */
+		// Find next widget in the given direction
 		int bestDistance = INT_MAX;
 		for (int i = 0; i < layout->count(); ++i) {
 			if (i == index) {

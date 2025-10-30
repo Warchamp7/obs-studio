@@ -29,7 +29,7 @@
 #include "moc_OBSBasicSourceSelect.cpp"
 
 struct AddSourceData {
-	/* Input data */
+	// Input data
 	obs_source_t *source;
 	bool visible;
 	obs_transform_info *transform = nullptr;
@@ -37,7 +37,7 @@ struct AddSourceData {
 	obs_blending_method *blend_method = nullptr;
 	obs_blending_type *blend_mode = nullptr;
 
-	/* Return data */
+	// Return data
 	obs_sceneitem_t *scene_item = nullptr;
 };
 
@@ -64,8 +64,9 @@ char *getNewSourceName(const char *name, const char *format)
 
 	for (;;) {
 		OBSSourceAutoRelease existing_source = obs_get_source_by_name(new_name.array);
-		if (!existing_source)
+		if (!existing_source) {
 			break;
+		}
 
 		dstr_printf(&new_name, format, name, ++inc + 1);
 	}
@@ -80,14 +81,18 @@ static void AddSource(void *_data, obs_scene_t *scene)
 
 	sceneitem = obs_scene_add(scene, data->source);
 
-	if (data->transform != nullptr)
+	if (data->transform != nullptr) {
 		obs_sceneitem_set_info2(sceneitem, data->transform);
-	if (data->crop != nullptr)
+	}
+	if (data->crop != nullptr) {
 		obs_sceneitem_set_crop(sceneitem, data->crop);
-	if (data->blend_method != nullptr)
+	}
+	if (data->blend_method != nullptr) {
 		obs_sceneitem_set_blending_method(sceneitem, *data->blend_method);
-	if (data->blend_mode != nullptr)
+	}
+	if (data->blend_mode != nullptr) {
 		obs_sceneitem_set_blending_mode(sceneitem, *data->blend_mode);
+	}
 
 	obs_sceneitem_set_visible(sceneitem, data->visible);
 
@@ -99,8 +104,9 @@ static void AddExisting(OBSSource source, bool visible, bool duplicate, obs_tran
 {
 	OBSBasic *main = OBSBasic::Get();
 	OBSScene scene = main->GetCurrentScene();
-	if (!scene)
+	if (!scene) {
 		return;
+	}
 
 	if (duplicate) {
 		OBSSource from = source;
@@ -109,8 +115,9 @@ static void AddExisting(OBSSource source, bool visible, bool duplicate, obs_tran
 		obs_source_release(source);
 		bfree(new_name);
 
-		if (!source)
+		if (!source) {
 			return;
+		}
 	}
 
 	AddSourceData data;
@@ -141,8 +148,9 @@ bool AddNew(QWidget *parent, const char *id, const char *name, const bool visibl
 	OBSBasic *main = OBSBasic::Get();
 	OBSScene scene = main->GetCurrentScene();
 	bool success = false;
-	if (!scene)
+	if (!scene) {
 		return false;
+	}
 
 	OBSSourceAutoRelease source = obs_get_source_by_name(name);
 	if (source && parent) {
@@ -164,7 +172,7 @@ bool AddNew(QWidget *parent, const char *id, const char *name, const bool visibl
 			newSource = source;
 			newSceneItem = data.scene_item;
 
-			/* set monitoring if source monitors by default */
+			// Set monitoring if source monitors by default
 			uint32_t flags = obs_source_get_output_flags(source);
 			if ((flags & OBS_SOURCE_MONITOR_BY_DEFAULT) != 0) {
 				obs_source_set_monitoring_type(source, OBS_MONITORING_TYPE_MONITOR_ONLY);
@@ -214,7 +222,8 @@ OBSBasicSourceSelect::OBSBasicSourceSelect(OBSBasic *parent, undo_stack &undo_s)
 
 	updateExistingSources(16);
 
-	connect(ui->lineEdit, &QLineEdit::returnPressed, this, &OBSBasicSourceSelect::createNewSource);
+	connect(ui->sourceTypeList, &QListWidget::itemDoubleClicked, this, &OBSBasicSourceSelect::createNewSource);
+	connect(ui->newSourceName, &QLineEdit::returnPressed, this, &OBSBasicSourceSelect::createNewSource);
 	connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
 	connect(ui->addExistingButton, &QAbstractButton::clicked, this, &OBSBasicSourceSelect::addSelectedSources);
@@ -239,7 +248,7 @@ void OBSBasicSourceSelect::checkSourceVisibility()
 {
 	QList<QAbstractButton *> buttons = sourceButtons->buttons();
 
-	/* Allow some room for previous/next rows to make scrolling a bit more seamless */
+	// Allow some room for previous/next rows to make scrolling a bit more seamless
 	QRect scrollAreaRect(QPoint(0, 0), ui->existingScrollArea->size());
 	scrollAreaRect.setTop(scrollAreaRect.top() - Thumbnail::cy);
 	scrollAreaRect.setBottom(scrollAreaRect.bottom() + Thumbnail::cy);
@@ -285,6 +294,7 @@ void OBSBasicSourceSelect::getSources()
 
 void OBSBasicSourceSelect::updateExistingSources(int limit)
 {
+	delete sourceButtons;
 	sourceButtons = new QButtonGroup(this);
 	sourceButtons->setExclusive(false);
 
@@ -297,6 +307,7 @@ void OBSBasicSourceSelect::updateExistingSources(int limit)
 		sourcesList = &reversedSources;
 	}
 
+	QWidget *prevTabWidget = ui->sourceTypeList;
 	int count = 0;
 	for (obs_source_t *source : *sourcesList) {
 		if (limit > 0 && count >= limit) {
@@ -304,34 +315,43 @@ void OBSBasicSourceSelect::updateExistingSources(int limit)
 		}
 
 		const char *id = obs_source_get_unversioned_id(source);
+		QString stringId = QString(id);
 
-		if (QString(id).compare("group") == 0) {
+		if (stringId.compare("group") == 0) {
 			continue;
 		}
 
-		QWidget *prevTabItem = ui->sourceTypeList;
-		if (sourceTypeId.compare(QString(id)) == 0 || sourceTypeId.isNull()) {
-			SourceSelectButton *newButton = new SourceSelectButton(source, ui->existingScrollContents);
+		if (sourceTypeId.compare(stringId) == 0 || sourceTypeId.isNull()) {
+			SourceSelectButton *newButton = new SourceSelectButton(source, ui->existingListFrame);
+			std::string name = obs_source_get_name(source);
+
 			existingFlowLayout->addWidget(newButton);
 			sourceButtons->addButton(newButton->getButton());
 
-			setTabOrder(prevTabItem, newButton->getButton());
-			prevTabItem = newButton->getButton();
+			if (!prevTabWidget) {
+				setTabOrder(ui->existingListFrame, newButton->getButton());
+			} else {
+				setTabOrder(prevTabWidget, newButton->getButton());
+			}
+
+			prevTabWidget = newButton->getButton();
 
 			count++;
 		}
 	}
+	setTabOrder(prevTabWidget, ui->addExistingContainer);
 
 	connect(sourceButtons, &QButtonGroup::buttonToggled, this, &OBSBasicSourceSelect::sourceButtonToggled);
 
 	ui->existingListFrame->adjustSize();
-	QTimer::singleShot(100, this, [this] { checkSourceVisibility(); });
+	QTimer::singleShot(10, this, [this] { checkSourceVisibility(); });
 }
 
 bool OBSBasicSourceSelect::enumSourcesCallback(void *data, obs_source_t *source)
 {
-	if (obs_source_is_hidden(source))
+	if (obs_source_is_hidden(source)) {
 		return true;
+	}
 
 	OBSBasicSourceSelect *window = static_cast<OBSBasicSourceSelect *>(data);
 
@@ -381,8 +401,9 @@ void OBSBasicSourceSelect::getSourceTypes()
 		const char *name = obs_source_get_display_name(type);
 		uint32_t caps = obs_get_source_output_flags(type);
 
-		if ((caps & OBS_SOURCE_CAP_DISABLED) != 0)
+		if ((caps & OBS_SOURCE_CAP_DISABLED) != 0) {
 			continue;
+		}
 
 		QListWidgetItem *newItem = new QListWidgetItem();
 		newItem->setData(Qt::DisplayRole, name);
@@ -460,13 +481,14 @@ void OBSBasicSourceSelect::setSelectedSourceType(QListWidgetItem *item)
 		text = QString("%1 %2").arg(placeHolderText).arg(i++);
 	}
 
-	ui->lineEdit->setText(text);
-	ui->lineEdit->selectAll();
+	ui->newSourceName->setText(text);
+	ui->newSourceName->selectAll();
 
 	if (sourceTypeId.compare("scene") == 0) {
 		OBSBasic *main = reinterpret_cast<OBSBasic *>(App()->GetMainWindow());
 		OBSSource curSceneSource = main->GetCurrentSceneSource();
 
+		delete sourceButtons;
 		sourceButtons = new QButtonGroup(this);
 
 		int count = main->ui->scenes->count();
@@ -476,17 +498,22 @@ void OBSBasicSourceSelect::setSelectedSourceType(QListWidgetItem *item)
 			OBSScene scene = GetOBSRef<OBSScene>(item);
 			OBSSource sceneSource = obs_scene_get_source(scene);
 
-			if (curSceneSource == sceneSource)
+			if (curSceneSource == sceneSource) {
 				continue;
+			}
 
-			SourceSelectButton *newButton = new SourceSelectButton(sceneSource, ui->existingScrollContents);
+			SourceSelectButton *newButton = new SourceSelectButton(sceneSource, ui->existingListFrame);
 			existingFlowLayout->addWidget(newButton);
 			sourceButtons->addButton(newButton->getButton());
 
 			setTabOrder(prevTabItem, newButton->getButton());
 			prevTabItem = newButton->getButton();
 		}
+		connect(sourceButtons, &QButtonGroup::buttonToggled, this, &OBSBasicSourceSelect::sourceButtonToggled);
+
 		QTimer::singleShot(100, this, [this] { checkSourceVisibility(); });
+
+		ui->createNewFrame->setVisible(false);
 
 	} else if (sourceTypeId.compare("group") == 0) {
 		obs_enum_sources(enumGroupsCallback, this);
@@ -635,14 +662,24 @@ void OBSBasicSourceSelect::createNewSource()
 {
 	bool visible = ui->sourceVisible->isChecked();
 
-	if (ui->lineEdit->text().isEmpty())
+	if (ui->newSourceName->text().isEmpty()) {
 		return;
+	}
+
+	if (sourceTypeId.isNull()) {
+		return;
+	}
+
+	if (sourceTypeId.compare("scene") == 0) {
+		return;
+	}
 
 	OBSSceneItem item;
 	std::string sourceType = sourceTypeId.toStdString();
 	const char *id = sourceType.c_str();
-	if (!AddNew(this, id, QT_TO_UTF8(ui->lineEdit->text()), visible, newSource, item))
+	if (!AddNew(this, id, QT_TO_UTF8(ui->newSourceName->text()), visible, newSource, item)) {
 		return;
+	}
 
 	if (newSource && strcmp(obs_source_get_id(newSource.Get()), "group") != 0) {
 		OBSBasic *main = reinterpret_cast<OBSBasic *>(App()->GetMainWindow());
@@ -657,7 +694,7 @@ void OBSBasicSourceSelect::createNewSource()
 		OBSDataAutoRelease wrapper = obs_data_create();
 		obs_data_set_string(wrapper, "id", id);
 		obs_data_set_int(wrapper, "item_id", obs_sceneitem_get_id(item));
-		obs_data_set_string(wrapper, "name", ui->lineEdit->text().toUtf8().constData());
+		obs_data_set_string(wrapper, "name", ui->newSourceName->text().toUtf8().constData());
 		obs_data_set_bool(wrapper, "visible", visible);
 
 		auto redo = [scene_name, main](const std::string &data) {
@@ -671,7 +708,7 @@ void OBSBasicSourceSelect::createNewSource()
 			       obs_data_get_bool(dat, "visible"), source, item);
 			obs_sceneitem_set_id(item, (int64_t)obs_data_get_int(dat, "item_id"));
 		};
-		undo_s.add_action(QTStr("Undo.Add").arg(ui->lineEdit->text()), undo, redo,
+		undo_s.add_action(QTStr("Undo.Add").arg(ui->newSourceName->text()), undo, redo,
 				  std::string(obs_source_get_name(newSource)), std::string(obs_data_get_json(wrapper)));
 
 		main->CreatePropertiesWindow(newSource);
@@ -742,21 +779,12 @@ void OBSBasicSourceSelect::sourceTypeSelected(QListWidgetItem *current, QListWid
 	setSelectedSourceType(current);
 }
 
-void OBSBasicSourceSelect::sourceTypeClicked(QListWidgetItem *clicked)
-{
-	setSelectedSourceType(clicked);
-
-	QVariant type = clicked->data(UNVERSIONED_ID_ROLE);
-	if (!type.isNull()) {
-		ui->lineEdit->setFocus();
-	}
-}
-
 void OBSBasicSourceSelect::SourcePaste(SourceCopyInfo &info, bool dup)
 {
 	OBSSource source = OBSGetStrongRef(info.weak_source);
-	if (!source)
+	if (!source) {
 		return;
+	}
 
 	AddExisting(source, info.visible, dup, &info.transform, &info.crop, &info.blend_method, &info.blend_mode);
 }

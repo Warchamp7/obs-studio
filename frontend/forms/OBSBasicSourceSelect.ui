@@ -381,7 +381,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QWidget" name="widget" native="true">
+                <widget class="QWidget" name="addExistingContainer" native="true">
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
@@ -520,7 +520,7 @@
                    <number>0</number>
                   </property>
                   <item>
-                   <widget class="QLineEdit" name="lineEdit">
+                   <widget class="QLineEdit" name="newSourceName">
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                       <horstretch>0</horstretch>
@@ -646,7 +646,11 @@
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>sourceTypeList</tabstop>
   <tabstop>existingScrollArea</tabstop>
+  <tabstop>addExistingButton</tabstop>
+  <tabstop>newSourceName</tabstop>
+  <tabstop>createNewSource</tabstop>
   <tabstop>sourceVisible</tabstop>
  </tabstops>
  <resources>
