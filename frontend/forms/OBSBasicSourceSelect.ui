@@ -3,7 +3,7 @@
  <class>OBSBasicSourceSelect</class>
  <widget class="QDialog" name="OBSBasicSourceSelect">
   <property name="windowModality">
-   <enum>Qt::WindowModality::NonModal</enum>
+   <enum>Qt::NonModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -56,10 +56,10 @@
       </sizepolicy>
      </property>
      <property name="frameShape">
-      <enum>QFrame::Shape::NoFrame</enum>
+      <enum>QFrame::NoFrame</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Shadow::Plain</enum>
+      <enum>QFrame::Plain</enum>
      </property>
      <property name="lineWidth">
       <number>0</number>
@@ -98,10 +98,10 @@
          <string>Basic.SourceSelect.SelectType</string>
         </property>
         <property name="frameShape">
-         <enum>QFrame::Shape::NoFrame</enum>
+         <enum>QFrame::NoFrame</enum>
         </property>
         <property name="frameShadow">
-         <enum>QFrame::Shadow::Plain</enum>
+         <enum>QFrame::Plain</enum>
         </property>
         <property name="lineWidth">
          <number>0</number>
@@ -143,31 +143,31 @@
             <string>Basic.SourceSelect.SelectType</string>
            </property>
            <property name="frameShape">
-            <enum>QFrame::Shape::NoFrame</enum>
+            <enum>QFrame::NoFrame</enum>
            </property>
            <property name="frameShadow">
-            <enum>QFrame::Shadow::Plain</enum>
+            <enum>QFrame::Plain</enum>
            </property>
            <property name="lineWidth">
             <number>0</number>
            </property>
            <property name="sizeAdjustPolicy">
-            <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContentsOnFirstShow</enum>
+            <enum>QAbstractScrollArea::AdjustToContentsOnFirstShow</enum>
            </property>
            <property name="editTriggers">
-            <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+            <set>QAbstractItemView::NoEditTriggers</set>
            </property>
            <property name="showDropIndicator" stdset="0">
             <bool>false</bool>
            </property>
            <property name="verticalScrollMode">
-            <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
+            <enum>QAbstractItemView::ScrollPerPixel</enum>
            </property>
            <property name="horizontalScrollMode">
-            <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
+            <enum>QAbstractItemView::ScrollPerPixel</enum>
            </property>
            <property name="resizeMode">
-            <enum>QListView::ResizeMode::Adjust</enum>
+            <enum>QListView::Adjust</enum>
            </property>
            <property name="class" stdset="0">
             <string/>
@@ -177,10 +177,10 @@
          <item>
           <spacer name="verticalSpacer_2">
            <property name="orientation">
-            <enum>Qt::Orientation::Vertical</enum>
+            <enum>Qt::Vertical</enum>
            </property>
            <property name="sizeType">
-            <enum>QSizePolicy::Policy::Minimum</enum>
+            <enum>QSizePolicy::Minimum</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -196,10 +196,10 @@
       <item>
        <widget class="QFrame" name="sourcesFrame">
         <property name="frameShape">
-         <enum>QFrame::Shape::NoFrame</enum>
+         <enum>QFrame::NoFrame</enum>
         </property>
         <property name="frameShadow">
-         <enum>QFrame::Shadow::Plain</enum>
+         <enum>QFrame::Plain</enum>
         </property>
         <property name="lineWidth">
          <number>0</number>
@@ -226,10 +226,10 @@
          <item>
           <widget class="QFrame" name="selectSourceContainer">
            <property name="frameShape">
-            <enum>QFrame::Shape::NoFrame</enum>
+            <enum>QFrame::NoFrame</enum>
            </property>
            <property name="frameShadow">
-            <enum>QFrame::Shadow::Plain</enum>
+            <enum>QFrame::Plain</enum>
            </property>
            <property name="lineWidth">
             <number>0</number>
@@ -259,7 +259,7 @@
                <string>Basic.SourceSelect.AddExisting</string>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Shadow::Plain</enum>
+               <enum>QFrame::Plain</enum>
               </property>
               <property name="lineWidth">
                <number>0</number>
@@ -302,22 +302,22 @@
                <item>
                 <widget class="QScrollArea" name="existingScrollArea">
                  <property name="focusPolicy">
-                  <enum>Qt::FocusPolicy::NoFocus</enum>
+                  <enum>Qt::NoFocus</enum>
                  </property>
                  <property name="frameShape">
-                  <enum>QFrame::Shape::NoFrame</enum>
+                  <enum>QFrame::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Shadow::Plain</enum>
+                  <enum>QFrame::Plain</enum>
                  </property>
                  <property name="lineWidth">
                   <number>0</number>
                  </property>
                  <property name="horizontalScrollBarPolicy">
-                  <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+                  <enum>Qt::ScrollBarAlwaysOff</enum>
                  </property>
                  <property name="sizeAdjustPolicy">
-                  <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
+                  <enum>QAbstractScrollArea::AdjustToContents</enum>
                  </property>
                  <property name="widgetResizable">
                   <bool>true</bool>
@@ -353,10 +353,10 @@
                    <item>
                     <widget class="FlowFrame" name="existingListFrame">
                      <property name="frameShape">
-                      <enum>QFrame::Shape::NoFrame</enum>
+                      <enum>QFrame::NoFrame</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Shadow::Plain</enum>
+                      <enum>QFrame::Plain</enum>
                      </property>
                      <property name="lineWidth">
                       <number>0</number>
@@ -366,7 +366,7 @@
                    <item>
                     <spacer name="verticalSpacer">
                      <property name="orientation">
-                      <enum>Qt::Orientation::Vertical</enum>
+                      <enum>Qt::Vertical</enum>
                      </property>
                      <property name="sizeHint" stdset="0">
                       <size>
@@ -404,7 +404,7 @@
                   <item>
                    <spacer name="horizontalSpacer_4">
                     <property name="orientation">
-                     <enum>Qt::Orientation::Horizontal</enum>
+                     <enum>Qt::Horizontal</enum>
                     </property>
                     <property name="sizeHint" stdset="0">
                      <size>
@@ -417,7 +417,7 @@
                   <item>
                    <spacer name="horizontalSpacer_3">
                     <property name="orientation">
-                     <enum>Qt::Orientation::Horizontal</enum>
+                     <enum>Qt::Horizontal</enum>
                     </property>
                     <property name="sizeHint" stdset="0">
                      <size>
@@ -455,10 +455,10 @@
             <item>
              <widget class="QFrame" name="createNewFrame">
               <property name="frameShape">
-               <enum>QFrame::Shape::NoFrame</enum>
+               <enum>QFrame::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Shadow::Plain</enum>
+               <enum>QFrame::Plain</enum>
               </property>
               <property name="lineWidth">
                <number>0</number>
@@ -495,10 +495,10 @@
                <item>
                 <widget class="QFrame" name="frame">
                  <property name="frameShape">
-                  <enum>QFrame::Shape::NoFrame</enum>
+                  <enum>QFrame::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Shadow::Plain</enum>
+                  <enum>QFrame::Plain</enum>
                  </property>
                  <property name="lineWidth">
                   <number>0</number>
@@ -560,10 +560,10 @@
          <item>
           <widget class="QFrame" name="footer">
            <property name="frameShape">
-            <enum>QFrame::Shape::NoFrame</enum>
+            <enum>QFrame::NoFrame</enum>
            </property>
            <property name="frameShadow">
-            <enum>QFrame::Shadow::Plain</enum>
+            <enum>QFrame::Plain</enum>
            </property>
            <property name="lineWidth">
             <number>0</number>
@@ -600,7 +600,7 @@
             <item>
              <spacer name="horizontalSpacer_2">
               <property name="orientation">
-               <enum>Qt::Orientation::Horizontal</enum>
+               <enum>Qt::Horizontal</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -619,7 +619,7 @@
                </sizepolicy>
               </property>
               <property name="standardButtons">
-               <set>QDialogButtonBox::StandardButton::Cancel</set>
+               <set>QDialogButtonBox::Cancel</set>
               </property>
               <property name="centerButtons">
                <bool>false</bool>
