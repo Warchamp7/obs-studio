@@ -71,6 +71,7 @@ SourceSelectButton::SourceSelectButton(obs_source_t *source_, QWidget *parent) :
 	button->setFixedSize(width(), height());
 	button->move(0, 0);
 
+	setFocusPolicy(Qt::StrongFocus);
 	setFocusProxy(button);
 
 	connect(button, &QAbstractButton::pressed, this, &SourceSelectButton::buttonPressed);

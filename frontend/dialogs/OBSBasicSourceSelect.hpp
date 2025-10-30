@@ -80,7 +80,6 @@ public slots:
 	void addSelectedSources();
 
 	void sourceTypeSelected(QListWidgetItem *current, QListWidgetItem *previous);
-	void sourceTypeClicked(QListWidgetItem *clicked);
 
 	void sourceButtonToggled(QAbstractButton *button, bool checked);
 	void sourceDropped(QString uuid);
