@@ -18,16 +18,15 @@
 
 #pragma once
 
+#include <OBSApp.hpp>
 #include "ui_OBSBasicSourceSelect.h"
 
-#include <QButtonGroup>
 #include <components/FlowLayout.hpp>
 #include <components/SourceSelectButton.hpp>
 #include <utility/undo_stack.hpp>
 #include <widgets/OBSBasic.hpp>
 
-#include <OBSApp.hpp>
-
+#include <QButtonGroup>
 #include <QDialog>
 
 constexpr int UNVERSIONED_ID_ROLE = Qt::UserRole + 1;

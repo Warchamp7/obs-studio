@@ -18,13 +18,13 @@
 
 #pragma once
 
+#include <obs.hpp>
+
+#include <QLabel>
 #include <QPushButton>
 #include <QPointer>
-#include <QLabel>
-#include <QVBoxLayout>
 #include <QTimer>
-
-#include <obs.hpp>
+#include <QVBoxLayout>
 
 class Thumbnail;
 class QLabel;
@@ -50,7 +50,7 @@ protected:
 
 private:
 	OBSWeakSource weakSource;
-	QSharedPointer<Thumbnail> thumbnail;
+	std::shared_ptr<Thumbnail> thumbnail;
 	QPointer<QLabel> image;
 
 	QPushButton *button = nullptr;

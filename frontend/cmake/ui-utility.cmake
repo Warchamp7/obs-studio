@@ -55,6 +55,7 @@ target_sources(
     utility/RemuxQueueModel.hpp
     utility/RemuxWorker.cpp
     utility/RemuxWorker.hpp
+    utility/ResizeSignaler.hpp
     utility/SceneRenameDelegate.cpp
     utility/SceneRenameDelegate.hpp
     utility/ScreenshotObj.cpp

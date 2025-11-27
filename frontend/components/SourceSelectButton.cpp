@@ -18,14 +18,14 @@
 
 #include "SourceSelectButton.hpp"
 
+#include <utility/ThumbnailManager.hpp>
+#include <widgets/OBSBasic.hpp>
+
 #include <QDrag>
 #include <QFrame>
 #include <QMimeData>
 #include <QPainter>
 #include <QStyleOptionButton>
-
-#include <utility/ThumbnailManager.hpp>
-#include <widgets/OBSBasic.hpp>
 
 SourceSelectButton::SourceSelectButton(obs_source_t *source_, QWidget *parent) : QFrame(parent)
 {
@@ -159,7 +159,7 @@ void SourceSelectButton::setRectVisible(bool visible)
 				thumbnailUpdated(thumbnail->getPixmap());
 			}
 		} else {
-			thumbnail.clear();
+			thumbnail.reset();
 		}
 	}
 

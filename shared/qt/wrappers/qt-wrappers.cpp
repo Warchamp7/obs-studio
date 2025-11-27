@@ -373,11 +373,3 @@ void RefreshToolBarStyling(QToolBar *toolBar)
 		widget->style()->polish(widget);
 	}
 }
-
-bool ResizeSignaler::eventFilter(QObject *object, QEvent *event)
-{
-	if (event->type() == QEvent::Resize) {
-		emit resized();
-	}
-	return QObject::eventFilter(object, event);
-}

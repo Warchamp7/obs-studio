@@ -16,10 +16,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
-#include "display-helpers.hpp"
 #include "ThumbnailManager.hpp"
+
 #include <utility/ScreenshotObj.hpp>
 #include <widgets/OBSBasic.hpp>
+
+#include "display-helpers.hpp"
 
 #include <QImageWriter>
 
@@ -28,7 +30,7 @@ constexpr int MIN_SOURCE_UPDATE_INTERVAL_MS = 5000;
 
 ThumbnailItem::ThumbnailItem(std::string uuid, OBSSource source) : uuid(uuid), weakSource(OBSGetWeakRef(source)) {}
 
-void ThumbnailItem::init(QWeakPointer<ThumbnailItem> weakActiveItem)
+void ThumbnailItem::init(std::weak_ptr<ThumbnailItem> weakActiveItem)
 {
 	auto thumbnailManager = OBSBasic::Get()->thumbnails();
 	if (!thumbnailManager) {
@@ -40,7 +42,7 @@ void ThumbnailItem::init(QWeakPointer<ThumbnailItem> weakActiveItem)
 		auto &cachedItem = it->second;
 		pixmap = cachedItem.pixmap.value_or(QPixmap());
 		cachedItem.pixmap.reset();
-		cachedItem.weakActiveItem = weakActiveItem;
+		cachedItem.weakActiveItem = std::move(weakActiveItem);
 	}
 }
 
@@ -53,7 +55,7 @@ ThumbnailItem::~ThumbnailItem()
 
 	auto &cachedItem = thumbnailManager->cachedThumbnails[uuid];
 	cachedItem.pixmap = pixmap;
-	cachedItem.weakActiveItem.clear();
+	cachedItem.weakActiveItem.reset();
 }
 
 void ThumbnailItem::imageUpdated(QImage image)
@@ -79,33 +81,33 @@ ThumbnailManager::ThumbnailManager(QObject *parent) : QObject(parent)
 
 ThumbnailManager::~ThumbnailManager() {}
 
-QSharedPointer<Thumbnail> ThumbnailManager::getThumbnail(OBSSource source)
+std::shared_ptr<Thumbnail> ThumbnailManager::getThumbnail(OBSSource source)
 {
 	std::string uuid = obs_source_get_uuid(source);
 
 	for (auto it = thumbnails.begin(); it != thumbnails.end(); ++it) {
-		auto item = it->toStrongRef();
+		auto item = it->lock();
 		if (item && item->uuid == uuid) {
-			return QSharedPointer<Thumbnail>::create(item);
+			return std::make_shared<Thumbnail>(item);
 		}
 	}
 
-	QSharedPointer<Thumbnail> thumbnail;
+	std::shared_ptr<Thumbnail> thumbnail;
 	if ((obs_source_get_output_flags(source) & OBS_SOURCE_VIDEO) != 0) {
-		auto item = QSharedPointer<ThumbnailItem>::create(uuid, source);
-		item->init(item.toWeakRef());
+		auto item = std::make_shared<ThumbnailItem>(uuid, source);
+		item->init(std::weak_ptr<ThumbnailItem>(item));
 
-		thumbnail = QSharedPointer<Thumbnail>::create(item);
+		thumbnail = std::make_shared<Thumbnail>(item);
 		connect(item.get(), &ThumbnailItem::updateThumbnail, thumbnail.get(), &Thumbnail::thumbnailUpdated);
 
-		newThumbnails.push_back(item.toWeakRef());
+		newThumbnails.push_back(std::weak_ptr<ThumbnailItem>(item));
 	}
 
 	updateIntervalChanged(thumbnails.size());
 	return thumbnail;
 }
 
-bool ThumbnailManager::updatePixmap(QSharedPointer<ThumbnailItem> &sharedPointerItem)
+bool ThumbnailManager::updatePixmap(std::shared_ptr<ThumbnailItem> &sharedPointerItem)
 {
 	ThumbnailItem *item = sharedPointerItem.get();
 
@@ -151,13 +153,13 @@ void ThumbnailManager::updateIntervalChanged(size_t newCount)
 
 void ThumbnailManager::updateTick()
 {
-	QSharedPointer<ThumbnailItem> item;
+	std::shared_ptr<ThumbnailItem> item;
 	bool changed = false;
 	bool newThumbnail = false;
 
 	while (newThumbnails.size() > 0) {
 		changed = true;
-		item = newThumbnails.front().toStrongRef();
+		item = newThumbnails.front().lock();
 
 		newThumbnails.pop_front();
 		if (item) {
@@ -168,7 +170,7 @@ void ThumbnailManager::updateTick()
 
 	if (!item) {
 		while (thumbnails.size() > 0) {
-			item = thumbnails.front().toStrongRef();
+			item = thumbnails.front().lock();
 			thumbnails.pop_front();
 			if (item) {
 				break;
@@ -185,9 +187,9 @@ void ThumbnailManager::updateTick()
 	}
 
 	if (updatePixmap(item)) {
-		thumbnails.push_back(item.toWeakRef());
+		thumbnails.push_back(std::weak_ptr<ThumbnailItem>(item));
 	} else {
-		thumbnails.push_front(item.toWeakRef());
+		thumbnails.push_front(std::weak_ptr<ThumbnailItem>(item));
 	}
 }
 
@@ -200,8 +202,8 @@ std::optional<QPixmap> ThumbnailManager::getCachedThumbnail(OBSSource source)
 		if (cachedItem.pixmap.has_value()) {
 			return cachedItem.pixmap;
 		} else {
-			auto activeItem = cachedItem.weakActiveItem.toStrongRef();
-			return !activeItem.isNull() ? std::make_optional(activeItem->pixmap) : std::nullopt;
+			auto activeItem = cachedItem.weakActiveItem.lock();
+			return activeItem ? std::make_optional(activeItem->pixmap) : std::nullopt;
 		}
 	} else {
 		return std::nullopt;

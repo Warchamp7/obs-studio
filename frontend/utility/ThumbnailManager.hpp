@@ -21,12 +21,12 @@
 #include <obs.hpp>
 
 #include <QObject>
-#include <QPointer>
 #include <QPixmap>
+#include <QPointer>
 #include <QTimer>
 
-#include <functional>
 #include <deque>
+#include <functional>
 
 class ThumbnailItem : public QObject {
 	Q_OBJECT
@@ -38,7 +38,7 @@ class ThumbnailItem : public QObject {
 	OBSWeakSource weakSource;
 	QPixmap pixmap;
 
-	void init(QWeakPointer<ThumbnailItem> weakActiveItem);
+	void init(std::weak_ptr<ThumbnailItem> weakActiveItem);
 	void imageUpdated(QImage image);
 
 public:
@@ -57,13 +57,13 @@ class Thumbnail : public QObject {
 
 	friend class ThumbnailManager;
 
-	QSharedPointer<ThumbnailItem> item;
+	std::shared_ptr<ThumbnailItem> item;
 
 private slots:
 	void thumbnailUpdated(QPixmap pixmap);
 
 public:
-	inline Thumbnail(QSharedPointer<ThumbnailItem> item) : item(item) {}
+	inline Thumbnail(std::shared_ptr<ThumbnailItem> item) : item(item) {}
 
 	inline QPixmap getPixmap() const { return item->pixmap; }
 
@@ -81,15 +81,15 @@ class ThumbnailManager : public QObject {
 
 	struct CachedItem {
 		std::optional<QPixmap> pixmap;
-		QWeakPointer<ThumbnailItem> weakActiveItem;
+		std::weak_ptr<ThumbnailItem> weakActiveItem;
 	};
 
-	QList<QWeakPointer<ThumbnailItem>> newThumbnails;
-	QList<QWeakPointer<ThumbnailItem>> thumbnails;
+	std::deque<std::weak_ptr<ThumbnailItem>> newThumbnails;
+	std::deque<std::weak_ptr<ThumbnailItem>> thumbnails;
 	std::unordered_map<std::string, CachedItem> cachedThumbnails;
 	QTimer updateTimer;
 
-	bool updatePixmap(QSharedPointer<ThumbnailItem> &item);
+	bool updatePixmap(std::shared_ptr<ThumbnailItem> &item);
 	void updateTick();
 
 	void updateIntervalChanged(size_t newCount);
@@ -98,7 +98,7 @@ public:
 	explicit ThumbnailManager(QObject *parent = nullptr);
 	~ThumbnailManager();
 
-	QSharedPointer<Thumbnail> getThumbnail(OBSSource source);
+	std::shared_ptr<Thumbnail> getThumbnail(OBSSource source);
 	std::optional<QPixmap> getCachedThumbnail(OBSSource source);
 	void preloadThumbnail(OBSSource source, QObject *object, std::function<void(QPixmap)> callback);
 

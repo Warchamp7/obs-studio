@@ -23,10 +23,10 @@
 #include <OBSApp.hpp>
 #include <oauth/Auth.hpp>
 #include <utility/BasicOutputHandler.hpp>
+#include <utility/ThumbnailManager.hpp>
 #include <utility/OBSCanvas.hpp>
 #include <utility/VCamConfig.hpp>
 #include <utility/platform.hpp>
-#include <utility/ThumbnailManager.hpp>
 #include <utility/undo_stack.hpp>
 
 #include <obs-frontend-internal.hpp>

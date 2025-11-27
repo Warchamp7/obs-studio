@@ -16,15 +16,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
+#include "OBSApp.hpp"
 #include "OBSBasicSourceSelect.hpp"
 
-#include <QMessageBox>
-#include <QList>
+#include <utility/ResizeSignaler.hpp>
+#include <utility/ThumbnailManager.hpp>
 
 #include "qt-wrappers.hpp"
-#include "OBSApp.hpp"
 
-#include <utility/ThumbnailManager.hpp>
+#include <QList>
+#include <QMessageBox>
 
 #include "moc_OBSBasicSourceSelect.cpp"
 
