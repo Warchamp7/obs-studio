@@ -20,6 +20,7 @@
 #include <components/Multiview.hpp>
 #include <dialogs/LogUploadDialog.hpp>
 #include <plugin-manager/PluginManager.hpp>
+#include <utility/AppTooltipObserver.hpp>
 #include <utility/CrashHandler.hpp>
 #include <utility/OBSEventFilter.hpp>
 #include <utility/OBSProxyStyle.hpp>
@@ -1266,6 +1267,8 @@ bool OBSApp::OBSInit()
 	connect(crashHandler_.get(), &OBS::CrashHandler::crashLogUploadFinished, this,
 		[this](const QString &fileUrl) { emit this->logUploadFinished(OBS::LogFileType::CrashLog, fileUrl); });
 
+	appTooltip = new idian::Tooltip(mainWindow);
+
 	return true;
 }
 
@@ -1409,6 +1412,29 @@ QStyle *OBSApp::GetInvisibleCursorStyle()
 		invisibleCursorStyle = std::make_unique<OBSInvisibleCursorProxyStyle>();
 	}
 	return invisibleCursorStyle.get();
+}
+
+idian::Tooltip *OBSApp::getTooltipWidget()
+{
+	return appTooltip;
+}
+
+void OBSApp::useOBSTooltip(QToolBar *toolbar)
+{
+	QList<QAction *> actions = toolbar->actions();
+
+	for (QAction *entry : actions) {
+		QWidget *widget = toolbar->widgetForAction(entry);
+
+		if (widget) {
+			AppTooltipObserver{widget};
+		}
+	}
+}
+
+void OBSApp::useOBSTooltip(QWidget *widget_)
+{
+	AppTooltipObserver{widget_};
 }
 
 // Global handler to receive all QEvent::Show events so we can apply
