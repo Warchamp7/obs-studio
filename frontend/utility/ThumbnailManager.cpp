@@ -18,7 +18,7 @@
 
 #include "ThumbnailManager.hpp"
 
-#include <utility/ScreenshotObj.hpp>
+#include <utility/ThumbnailView.hpp>
 #include <widgets/OBSBasic.hpp>
 
 #include "display-helpers.hpp"
@@ -28,119 +28,100 @@
 constexpr int MIN_THUMBNAIL_UPDATE_INTERVAL_MS = 100;
 constexpr int MIN_SOURCE_UPDATE_INTERVAL_MS = 5000;
 
-ThumbnailItem::ThumbnailItem(std::string uuid, OBSSource source) : uuid(uuid), weakSource(OBSGetWeakRef(source)) {}
-
-void ThumbnailItem::init(std::weak_ptr<ThumbnailItem> weakActiveItem)
-{
-	auto thumbnailManager = OBSBasic::Get()->thumbnails();
-	if (!thumbnailManager) {
-		return;
-	}
-
-	auto it = thumbnailManager->cachedThumbnails.find(uuid);
-	if (it != thumbnailManager->cachedThumbnails.end()) {
-		auto &cachedItem = it->second;
-		pixmap = cachedItem.pixmap.value_or(QPixmap());
-		cachedItem.pixmap.reset();
-		cachedItem.weakActiveItem = std::move(weakActiveItem);
-	}
-}
-
-ThumbnailItem::~ThumbnailItem()
-{
-	auto thumbnailManager = OBSBasic::Get()->thumbnails();
-	if (!thumbnailManager) {
-		return;
-	}
-
-	auto &cachedItem = thumbnailManager->cachedThumbnails[uuid];
-	cachedItem.pixmap = pixmap;
-	cachedItem.weakActiveItem.reset();
-}
-
-void ThumbnailItem::imageUpdated(QImage image)
-{
-	QPixmap newPixmap;
-	if (!image.isNull()) {
-		newPixmap = QPixmap::fromImage(image);
-	}
-
-	pixmap = newPixmap;
-	emit updateThumbnail(pixmap);
-}
-
-void Thumbnail::thumbnailUpdated(QPixmap pixmap)
-{
-	emit updateThumbnail(pixmap);
-}
-
 ThumbnailManager::ThumbnailManager(QObject *parent) : QObject(parent)
 {
 	connect(&updateTimer, &QTimer::timeout, this, &ThumbnailManager::updateTick);
+	updateIntervalFromTotal(0);
+
+	signalHandlers.emplace_back(obs_get_signal_handler(), "source_destroy", ThumbnailManager::obsSourceRemoved,
+				    this);
 }
 
 ThumbnailManager::~ThumbnailManager() {}
 
-std::shared_ptr<Thumbnail> ThumbnailManager::getThumbnail(OBSSource source)
+ThumbnailView *ThumbnailManager::createView(QWidget *parent, OBSSource &source)
 {
 	std::string uuid = obs_source_get_uuid(source);
 
-	for (auto it = thumbnails.begin(); it != thumbnails.end(); ++it) {
-		auto item = it->lock();
-		if (item && item->uuid == uuid) {
-			return std::make_shared<Thumbnail>(item);
+	auto item = getThumbnailItem(source);
+	ThumbnailView *view = new ThumbnailView(parent, item);
+
+	item->incrementViewCount();
+	if (view->isEnabled()) {
+		item->incrementEnabledCount();
+	}
+
+	// Connect ThumbnailView signals
+	connect(view, &QObject::destroyed, item.get(), [=]() {
+		item->decrementViewCount();
+		if (view->isEnabled()) {
+			item->decrementEnabledCount();
 		}
-	}
+	});
+	connect(view, &ThumbnailView::enabledChanged, item.get(), [=](bool enabled) {
+		if (enabled) {
+			item->incrementEnabledCount();
+		} else {
+			item->decrementEnabledCount();
+		}
+	});
+	connect(view, &ThumbnailView::updateRequested, this, &ThumbnailManager::addToPriorityQueue);
 
-	std::shared_ptr<Thumbnail> thumbnail;
-	if ((obs_source_get_output_flags(source) & OBS_SOURCE_VIDEO) != 0) {
-		auto item = std::make_shared<ThumbnailItem>(uuid, source);
-		item->init(std::weak_ptr<ThumbnailItem>(item));
-
-		thumbnail = std::make_shared<Thumbnail>(item);
-		connect(item.get(), &ThumbnailItem::updateThumbnail, thumbnail.get(), &Thumbnail::thumbnailUpdated);
-
-		newThumbnails.push_back(std::weak_ptr<ThumbnailItem>(item));
-	}
-
-	updateIntervalChanged(thumbnails.size());
-	return thumbnail;
+	return view;
 }
 
-bool ThumbnailManager::updatePixmap(std::shared_ptr<ThumbnailItem> &sharedPointerItem)
+void ThumbnailManager::createThumbnailItem(std::string &uuid, OBSSource &source)
 {
-	ThumbnailItem *item = sharedPointerItem.get();
+	QPointer<ThumbnailItem> item = new ThumbnailItem(uuid, source, this);
+	addToPriorityQueue(uuid);
+	thumbnailList[uuid] = item;
 
-	OBSSource source = OBSGetStrongRef(item->weakSource);
-	if (!source) {
-		return true;
+	connect(item, &ThumbnailItem::closing, item, [=]() {
+		//
+		deleteItemById(item->getUuid());
+	});
+
+	auto cachedPixmap = thumbnailCache.get(uuid);
+	if (cachedPixmap.has_value()) {
+		item->setPixmap(cachedPixmap.value());
 	}
-
-	QPixmap pixmap;
-	item->pixmap = pixmap;
-
-	if (source) {
-		uint32_t sourceWidth = obs_source_get_width(source);
-		uint32_t sourceHeight = obs_source_get_height(source);
-
-		if (sourceWidth == 0 || sourceHeight == 0) {
-			return true;
-		}
-
-		auto obj = new ScreenshotObj(source);
-		obj->setSaveToFile(false);
-		obj->setSize(Thumbnail::cx, Thumbnail::cy);
-
-		connect(obj, &ScreenshotObj::imageReady, item, &ThumbnailItem::imageUpdated);
-	}
-
-	return true;
 }
 
-void ThumbnailManager::updateIntervalChanged(size_t newCount)
+QPointer<ThumbnailItem> ThumbnailManager::getThumbnailItem(OBSSource &source)
+{
+	std::string uuid = obs_source_get_uuid(source);
+
+	if (thumbnailList.find(uuid) == thumbnailList.end()) {
+		createThumbnailItem(uuid, source);
+	}
+
+	return thumbnailList[uuid];
+}
+
+void ThumbnailManager::obsSourceRemoved(void *data, calldata_t *params)
+{
+	obs_source_t *source = (obs_source_t *)calldata_ptr(params, "source");
+	auto uuidPointer = obs_source_get_uuid(source);
+
+	if (uuidPointer) {
+		QMetaObject::invokeMethod(static_cast<ThumbnailManager *>(data), &ThumbnailManager::deleteItemById,
+					  std::string(uuidPointer));
+	}
+}
+
+bool ThumbnailManager::updateItem(ThumbnailItem *item)
+{
+	if (!item) {
+		return false;
+	}
+
+	return item->update();
+}
+
+void ThumbnailManager::updateIntervalFromTotal(size_t newCount)
 {
 	int intervalMS = MIN_THUMBNAIL_UPDATE_INTERVAL_MS;
-	if (newThumbnails.size() == 0 && newCount > 0) {
+	if (priorityQueue.size() == 0 && newCount > 0) {
 		int count = (int)newCount;
 		intervalMS = MIN_SOURCE_UPDATE_INTERVAL_MS / count;
 		if (intervalMS < MIN_THUMBNAIL_UPDATE_INTERVAL_MS) {
@@ -151,98 +132,102 @@ void ThumbnailManager::updateIntervalChanged(size_t newCount)
 	updateTimer.start(intervalMS);
 }
 
-void ThumbnailManager::updateTick()
+void ThumbnailManager::updateNextItem(int cycleDepth)
 {
-	std::shared_ptr<ThumbnailItem> item;
-	bool changed = false;
-	bool newThumbnail = false;
-
-	while (newThumbnails.size() > 0) {
-		changed = true;
-		item = newThumbnails.front().lock();
-
-		newThumbnails.pop_front();
-		if (item) {
-			newThumbnail = true;
-			break;
-		}
-	}
-
-	if (!item) {
-		while (thumbnails.size() > 0) {
-			item = thumbnails.front().lock();
-			thumbnails.pop_front();
-			if (item) {
-				break;
-			} else {
-				changed = true;
-			}
-		}
-	}
-	if (changed && newThumbnails.size() == 0) {
-		updateIntervalChanged(thumbnails.size() + (item ? 1 : 0));
-	}
-	if (!item) {
+	if (thumbnailList.size() == 0) {
 		return;
 	}
 
-	if (updatePixmap(item)) {
-		thumbnails.push_back(std::weak_ptr<ThumbnailItem>(item));
-	} else {
-		thumbnails.push_front(std::weak_ptr<ThumbnailItem>(item));
-	}
-}
+	QPointer<ThumbnailItem> item;
 
-std::optional<QPixmap> ThumbnailManager::getCachedThumbnail(OBSSource source)
-{
-	std::string uuid = obs_source_get_uuid(source);
-	auto it = cachedThumbnails.find(uuid);
-	if (it != cachedThumbnails.end()) {
-		auto &cachedItem = it->second;
-		if (cachedItem.pixmap.has_value()) {
-			return cachedItem.pixmap;
-		} else {
-			auto activeItem = cachedItem.weakActiveItem.lock();
-			return activeItem ? std::make_optional(activeItem->pixmap) : std::nullopt;
-		}
-	} else {
-		return std::nullopt;
-	}
-}
+	if (priorityQueue.size() > 0) {
+		std::string uuid = priorityQueue.front();
+		priorityQueue.pop_front();
 
-void ThumbnailManager::preloadThumbnail(OBSSource source, QObject *object, std::function<void(QPixmap)> callback)
-{
-	std::string uuid = obs_source_get_uuid(source);
+		item = thumbnailList[uuid];
+		updateQueue.push_back(uuid);
 
-	if (cachedThumbnails.find(uuid) == cachedThumbnails.end()) {
-		uint32_t sourceWidth = obs_source_get_width(source);
-		uint32_t sourceHeight = obs_source_get_height(source);
-
-		cachedThumbnails[uuid].pixmap = QPixmap();
-		if (sourceWidth == 0 || sourceHeight == 0) {
+		if (!updateItem(item)) {
+			updateNextItem(cycleDepth + 1);
 			return;
 		}
+	} else if (updateQueue.size() > 0) {
+		std::string uuid = updateQueue.front();
 
-		auto obj = new ScreenshotObj(source);
-		obj->setSaveToFile(false);
-		obj->setSize(Thumbnail::cx, Thumbnail::cy);
+		updateQueue.pop_front();
+		item = thumbnailList[uuid];
+		updateQueue.push_back(uuid);
 
-		QPointer<QObject> safeObject = qobject_cast<QObject *>(object);
-		connect(obj, &ScreenshotObj::imageReady, this, [=](QImage image) {
-			QPixmap pixmap;
-			if (!image.isNull()) {
-				pixmap = QPixmap::fromImage(image);
+		if (!updateItem(item) && cycleDepth < updateQueue.size()) {
+			updateNextItem(cycleDepth + 1);
+			return;
+		}
+	}
+
+	if (priorityQueue.size() == 0) {
+		updateIntervalFromTotal(thumbnailList.size() + 1);
+	} else {
+		updateIntervalFromTotal(thumbnailList.size());
+	}
+}
+
+void ThumbnailManager::updateTick()
+{
+	updateNextItem();
+}
+
+void ThumbnailManager::addToPriorityQueue(std::string &uuid)
+{
+	auto it = std::find(updateQueue.begin(), updateQueue.end(), uuid);
+	if (it != updateQueue.end()) {
+		updateQueue.erase(it);
+	}
+
+	it = std::find(priorityQueue.begin(), priorityQueue.end(), uuid);
+	if (it != priorityQueue.end()) {
+		priorityQueue.erase(it);
+	}
+
+	priorityQueue.push_back(std::string(uuid));
+}
+
+void ThumbnailManager::addItemToCache(std::string &uuid, QPixmap &pixmap)
+{
+	if (pixmap.isNull()) {
+		return;
+	}
+
+	thumbnailCache.put(uuid, pixmap);
+}
+
+void ThumbnailManager::deleteItemById(std::string uuid)
+{
+	auto entry = thumbnailList.find(uuid);
+	if (entry != thumbnailList.end()) {
+		for (auto it = updateQueue.begin(); it != updateQueue.end();) {
+			if (*it == uuid) {
+				it = updateQueue.erase(it);
+			} else {
+				++it;
 			}
-			cachedThumbnails[uuid].pixmap = pixmap;
+		}
 
-			QMetaObject::invokeMethod(
-				safeObject,
-				[safeObject, callback, pixmap]() {
-					if (safeObject) {
-						callback(pixmap);
-					}
-				},
-				Qt::QueuedConnection);
-		});
+		for (auto it = priorityQueue.begin(); it != priorityQueue.end();) {
+			if (*it == uuid) {
+				it = priorityQueue.erase(it);
+			} else {
+				++it;
+			}
+		}
+
+		auto item = entry->second;
+
+		if (item) {
+			std::string uuid = item->getUuid();
+			QPixmap pixmap = item->getPixmap();
+			addItemToCache(uuid, pixmap);
+		}
+
+		thumbnailList.erase(uuid);
 	}
 }

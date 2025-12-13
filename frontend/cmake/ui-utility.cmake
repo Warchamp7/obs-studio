@@ -66,8 +66,12 @@ target_sources(
     utility/StartMultiTrackVideoStreamingGuard.hpp
     utility/SurfaceEventFilter.hpp
     utility/system-info.hpp
+    utility/ThumbnailItem.cpp
+    utility/ThumbnailItem.hpp
     utility/ThumbnailManager.cpp
     utility/ThumbnailManager.hpp
+    utility/ThumbnailView.cpp
+    utility/ThumbnailView.hpp
     utility/undo_stack.cpp
     utility/undo_stack.hpp
     utility/VCamConfig.hpp
