@@ -26,7 +26,7 @@
 #include <QTimer>
 #include <QVBoxLayout>
 
-class Thumbnail;
+class ThumbnailView;
 class QLabel;
 
 class SourceSelectButton : public QFrame {
@@ -45,13 +45,17 @@ public:
 protected:
 	void resizeEvent(QResizeEvent *event) override;
 	void moveEvent(QMoveEvent *event) override;
+	void enterEvent(QEnterEvent *event) override;
 	void mouseMoveEvent(QMouseEvent *event) override;
 	void buttonPressed();
 
 private:
 	OBSWeakSource weakSource;
-	std::shared_ptr<Thumbnail> thumbnail;
+	QPointer<ThumbnailView> thumbnail;
 	QPointer<QLabel> image;
+
+	std::vector<OBSSignal> signalHandlers;
+	static void obsSourceRemoved(void *param, calldata_t *calldata);
 
 	QPushButton *button = nullptr;
 	QVBoxLayout *layout = nullptr;
@@ -59,10 +63,8 @@ private:
 	bool preload = true;
 	bool rectVisible = false;
 
-	void setDefaultThumbnail();
-
 	QPoint dragStartPosition;
 
 private slots:
-	void thumbnailUpdated(QPixmap pixmap);
+	void updatePixmap(QPixmap pixmap);
 };
