@@ -284,6 +284,8 @@ private:
 
 	ThumbnailManager *thumbnailManager = nullptr;
 
+	void showTestBuildDialogIfNeeded();
+
 public slots:
 	void UpdatePatronJson(const QString &text, const QString &error);
 	void UpdateEditMenu();

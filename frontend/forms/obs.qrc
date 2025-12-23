@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/res">
+    <file>images/test-build-banner.png</file>
     <file>images/layout-horizontal.svg</file>
     <file>images/layout-vertical.svg</file>
     <file>images/close.svg</file>

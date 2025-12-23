@@ -46,6 +46,7 @@
 #endif
 #include <widgets/AudioMixer.hpp>
 #include <widgets/OBSProjector.hpp>
+#include <widgets/TestBuildDialog.hpp>
 
 #include <OBSStudioAPI.hpp>
 #ifdef BROWSER_AVAILABLE
@@ -1366,6 +1367,9 @@ void OBSBasic::OBSInit()
 		QString failed_msg = QTStr("PluginsFailedToLoad.Text").arg(failed_plugins);
 		OBSMessageBox::warning(this, QTStr("PluginsFailedToLoad.Title"), failed_msg);
 	}
+
+	// Display Test Build dialog
+	showTestBuildDialogIfNeeded();
 }
 
 void OBSBasic::OnFirstLoad()
@@ -1926,6 +1930,15 @@ void OBSBasic::GetConfigFPS(uint32_t &num, uint32_t &den) const
 config_t *OBSBasic::Config() const
 {
 	return activeConfiguration;
+}
+
+void OBSBasic::showTestBuildDialogIfNeeded()
+{
+	int showDialog = config_get_int(App()->GetAppConfig(), "General", "PreviewBuildWarningIncrement");
+	if (showDialog >= 0) {
+		auto testDialog = new TestBuildDialog(this);
+		testDialog->show();
+	}
 }
 
 void OBSBasic::UpdateEditMenu()

@@ -59,4 +59,6 @@ target_sources(
     widgets/OBSQTDisplay.hpp
     widgets/StatusBarWidget.cpp
     widgets/StatusBarWidget.hpp
+    widgets/TestBuildDialog.cpp
+    widgets/TestBuildDialog.hpp
 )

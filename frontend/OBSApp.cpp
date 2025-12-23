@@ -298,6 +298,8 @@ bool OBSApp::InitGlobalConfigDefaults()
 	config_set_default_string(appConfig, "General", "ProcessPriority", "Normal");
 	config_set_default_bool(appConfig, "General", "EnableAutoUpdates", true);
 
+	config_set_default_int(appConfig, "General", "PreviewBuildWarningIncrement", 0);
+
 #if _WIN32
 	config_set_default_string(appConfig, "Video", "Renderer", "Direct3D 11");
 #else
