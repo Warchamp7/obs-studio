@@ -19,52 +19,39 @@
 #pragma once
 
 #include <obs.hpp>
+	
+#include <utility/ThumbnailItem.hpp>
 
-#include <QLabel>
+#include <QObject>
+#include <QPixmap>
 #include <QPointer>
-#include <QPushButton>
-#include <QTimer>
-#include <QVBoxLayout>
 
-class QLabel;
-class Thumbnail;
-class ThumbnailView;
-
-class SourceSelectButton : public QFrame {
+class ThumbnailView : public QObject {
 	Q_OBJECT
 
+	QPixmap pixmap{};
+	bool enabled = true;
+
+public slots:
+	void setPixmap(QPixmap pixmap);
+
 public:
-	SourceSelectButton(OBSWeakSource source, QWidget *parent = nullptr);
-	~SourceSelectButton();
+	ThumbnailView(QObject *parent, QPointer<ThumbnailItem> item);
+	~ThumbnailView();
 
-	QPushButton *button();
-	QString text();
+	std::string uuid{};
+	inline QPixmap getPixmap() const { return pixmap; }
 
-	void setRectVisible(bool visible);
-	void setPreload(bool preload);
+	static constexpr int cx = 320;
+	static constexpr int cy = 180;
 
-protected:
-	void resizeEvent(QResizeEvent *event) override;
-	void moveEvent(QMoveEvent *event) override;
-	void enterEvent(QEnterEvent *event) override;
-	void mouseMoveEvent(QMouseEvent *event) override;
-	void buttonPressed();
+	bool isEnabled() const { return enabled; }
+	void setEnabled(bool enabled);
 
-private:
-	OBSWeakSource weakSource;
-	QPointer<ThumbnailView> thumbnail;
-	QPointer<QLabel> image;
+	void requestUpdate();
 
-	std::vector<OBSSignal> signalHandlers;
-	static void obsSourceRemoved(void *param, calldata_t *calldata);
-
-	QPointer<QPushButton> button_ = nullptr;
-	QLabel *label = nullptr;
-	bool preload = true;
-	bool rectVisible = false;
-
-	QPoint dragStartPosition;
-
-private slots:
-	void updatePixmap(QPixmap pixmap);
+signals:
+	void updated(QPixmap pixmap);
+	void enabledChanged(bool enabled);
+	void updateRequested(std::string &uuid);
 };

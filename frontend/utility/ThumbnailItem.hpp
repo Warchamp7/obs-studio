@@ -20,51 +20,46 @@
 
 #include <obs.hpp>
 
-#include <QLabel>
-#include <QPointer>
-#include <QPushButton>
-#include <QTimer>
-#include <QVBoxLayout>
+#include <QObject>
+#include <QPixmap>
 
-class QLabel;
-class Thumbnail;
 class ThumbnailView;
 
-class SourceSelectButton : public QFrame {
+class ThumbnailItem : public QObject {
 	Q_OBJECT
 
-public:
-	SourceSelectButton(OBSWeakSource source, QWidget *parent = nullptr);
-	~SourceSelectButton();
-
-	QPushButton *button();
-	QString text();
-
-	void setRectVisible(bool visible);
-	void setPreload(bool preload);
-
-protected:
-	void resizeEvent(QResizeEvent *event) override;
-	void moveEvent(QMoveEvent *event) override;
-	void enterEvent(QEnterEvent *event) override;
-	void mouseMoveEvent(QMouseEvent *event) override;
-	void buttonPressed();
-
-private:
+	std::string uuid{};
 	OBSWeakSource weakSource;
-	QPointer<ThumbnailView> thumbnail;
-	QPointer<QLabel> image;
+	QPixmap pixmap{};
+	bool isVideoSource = false;
 
-	std::vector<OBSSignal> signalHandlers;
-	static void obsSourceRemoved(void *param, calldata_t *calldata);
+	int viewCount{0};
+	int enabledCount{0};
 
-	QPointer<QPushButton> button_ = nullptr;
-	QLabel *label = nullptr;
-	bool preload = true;
-	bool rectVisible = false;
+	QPixmap getDefaultThumbnail(obs_source_t *source);
+	void updatePixmapFromImage(QImage image);
+	bool shouldUpdate() const;
 
-	QPoint dragStartPosition;
+public:
+	ThumbnailItem(const std::string &uuid, QObject *parent);
+	~ThumbnailItem();
 
-private slots:
-	void updatePixmap(QPixmap pixmap);
+	bool update();
+	QPixmap getPixmap() const;
+	void setPixmap(QPixmap pixmap);
+
+	inline bool isValid() const { return isVideoSource && weakSource && !obs_weak_source_expired(weakSource); }
+	inline const std::string &getUuid() const { return uuid; }
+
+	ThumbnailView *createView(QObject *parent);
+
+public slots:
+	void incrementViewCount();
+	void decrementViewCount();
+	void incrementEnabledCount();
+	void decrementEnabledCount();
+
+signals:
+	void pixmapUpdated(QPixmap pixmap);
+	void noViewsRemaining();
 };

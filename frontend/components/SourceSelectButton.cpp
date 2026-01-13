@@ -19,6 +19,7 @@
 #include "SourceSelectButton.hpp"
 
 #include <utility/ThumbnailManager.hpp>
+#include <utility/ThumbnailView.hpp>
 #include <widgets/OBSBasic.hpp>
 
 #include <QDrag>
@@ -27,21 +28,25 @@
 #include <QPainter>
 #include <QStyleOptionButton>
 
-SourceSelectButton::SourceSelectButton(obs_source_t *source_, QWidget *parent) : QFrame(parent)
+SourceSelectButton::SourceSelectButton(OBSWeakSource weak, QWidget *parent) : QFrame(parent), weakSource(weak)
 {
-	OBSSource source = source_;
-	weakSource = OBSGetWeakRef(source);
+	OBSSource source{OBSGetStrongRef(weak)};
+
+	if (!source || !weakSource) {
+		return;
+	}
+
 	const char *sourceName = obs_source_get_name(source);
 
 	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-	button = new QPushButton(this);
-	button->setCheckable(true);
-	button->setAttribute(Qt::WA_Moved);
-	button->setAccessibleName(sourceName);
-	button->show();
+	button_ = new QPushButton(this);
+	button_->setCheckable(true);
+	button_->setAttribute(Qt::WA_Moved);
+	button_->setAccessibleName(sourceName);
+	button_->show();
 
-	layout = new QVBoxLayout();
+	QVBoxLayout *layout = new QVBoxLayout();
 	layout->setContentsMargins(0, 0, 0, 0);
 	layout->setSpacing(0);
 	setLayout(layout);
@@ -57,31 +62,32 @@ SourceSelectButton::SourceSelectButton(obs_source_t *source_, QWidget *parent) :
 	image->setMinimumSize(160, 90);
 	image->setMaximumSize(160, 90);
 	image->setAlignment(Qt::AlignCenter);
-	std::optional<QPixmap> cachedThumbnail = OBSBasic::Get()->thumbnails()->getCachedThumbnail(source);
 
-	if (cachedThumbnail.has_value()) {
-		thumbnailUpdated(*cachedThumbnail);
-	} else {
-		setDefaultThumbnail();
-	}
+	thumbnail = OBSBasic::Get()->thumbnails()->createView(this, source);
+	connect(thumbnail, &ThumbnailView::updated, this, &SourceSelectButton::updatePixmap);
+	updatePixmap(thumbnail->getPixmap());
 
 	layout->addWidget(image);
 	layout->addWidget(label);
 
-	button->setFixedSize(width(), height());
-	button->move(0, 0);
+	button()->setFixedSize(width(), height());
+	button()->move(0, 0);
 
 	setFocusPolicy(Qt::StrongFocus);
-	setFocusProxy(button);
+	setFocusProxy(button());
 
-	connect(button, &QAbstractButton::pressed, this, &SourceSelectButton::buttonPressed);
+	signalHandlers.reserve(1);
+	signalHandlers.emplace_back(obs_source_get_signal_handler(source), "destroy",
+				    &SourceSelectButton::obsSourceRemoved, this);
+
+	connect(button(), &QAbstractButton::pressed, this, &SourceSelectButton::buttonPressed);
 }
 
 SourceSelectButton::~SourceSelectButton() {}
 
-QPointer<QPushButton> SourceSelectButton::getButton()
+QPushButton *SourceSelectButton::button()
 {
-	return button;
+	return button_;
 }
 
 QString SourceSelectButton::text()
@@ -91,14 +97,19 @@ QString SourceSelectButton::text()
 
 void SourceSelectButton::resizeEvent(QResizeEvent *)
 {
-	button->setFixedSize(width(), height());
-	button->move(0, 0);
+	button()->setFixedSize(width(), height());
+	button()->move(0, 0);
 }
 
 void SourceSelectButton::moveEvent(QMoveEvent *)
 {
-	button->setFixedSize(width(), height());
-	button->move(0, 0);
+	button()->setFixedSize(width(), height());
+	button()->move(0, 0);
+}
+
+void SourceSelectButton::enterEvent(QEnterEvent *event)
+{
+	thumbnail->requestUpdate();
 }
 
 void SourceSelectButton::buttonPressed()
@@ -106,14 +117,9 @@ void SourceSelectButton::buttonPressed()
 	dragStartPosition = QCursor::pos();
 }
 
-void SourceSelectButton::setDefaultThumbnail()
+void SourceSelectButton::obsSourceRemoved(void *data, calldata_t *params)
 {
-	OBSSource source = OBSGetStrongRef(weakSource);
-	if (source) {
-		const char *id = obs_source_get_id(source);
-		QIcon icon = OBSBasic::Get()->GetSourceIcon(id);
-		image->setPixmap(icon.pixmap(45, 45));
-	}
+	QMetaObject::invokeMethod(static_cast<SourceSelectButton *>(data), &SourceSelectButton::deleteLater);
 }
 
 void SourceSelectButton::mouseMoveEvent(QMouseEvent *event)
@@ -153,19 +159,15 @@ void SourceSelectButton::setRectVisible(bool visible)
 			uint32_t flags = obs_source_get_output_flags(source);
 			bool hasVideo = (flags & OBS_SOURCE_VIDEO) == OBS_SOURCE_VIDEO;
 			if (hasVideo) {
-				thumbnail = OBSBasic::Get()->thumbnails()->getThumbnail(source);
-				connect(thumbnail.get(), &Thumbnail::updateThumbnail, this,
-					&SourceSelectButton::thumbnailUpdated);
-				thumbnailUpdated(thumbnail->getPixmap());
+				thumbnail->setEnabled(true);
 			}
 		} else {
-			thumbnail.reset();
+			thumbnail->setEnabled(false);
 		}
 	}
 
 	if (preload && !rectVisible) {
-		OBSBasic::Get()->thumbnails()->preloadThumbnail(source, this,
-								[=](QPixmap pixmap) { thumbnailUpdated(pixmap); });
+		thumbnail->requestUpdate();
 	}
 	preload = false;
 }
@@ -175,11 +177,9 @@ void SourceSelectButton::setPreload(bool preload)
 	this->preload = preload;
 }
 
-void SourceSelectButton::thumbnailUpdated(QPixmap pixmap)
+void SourceSelectButton::updatePixmap(QPixmap pixmap)
 {
 	if (!pixmap.isNull()) {
 		image->setPixmap(pixmap.scaled(160, 90, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-	} else {
-		setDefaultThumbnail();
 	}
 }
