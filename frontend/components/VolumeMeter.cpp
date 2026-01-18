@@ -345,7 +345,7 @@ VolumeMeter::VolumeMeter(QWidget *parent, obs_source_t *source)
 		if (needLayoutChange()) {
 			doLayout();
 		}
-		repaint();
+		update();
 	});
 
 	connect(App(), &OBSApp::StyleChanged, this, &VolumeMeter::updateBackgroundCache);
@@ -367,7 +367,6 @@ void VolumeMeter::setLevels(const float magnitude[MAX_AUDIO_CHANNELS], const flo
 			    const float inputPeak[MAX_AUDIO_CHANNELS])
 {
 	uint64_t ts = os_gettime_ns();
-	QMutexLocker locker(&dataMutex);
 
 	currentLastUpdateTime = ts;
 	for (int channelNr = 0; channelNr < MAX_AUDIO_CHANNELS; channelNr++) {
@@ -378,7 +377,6 @@ void VolumeMeter::setLevels(const float magnitude[MAX_AUDIO_CHANNELS], const flo
 
 	// In case there are more updates then redraws we must make sure
 	// that the ballistics of peak and hold are recalculated.
-	locker.unlock();
 	calculateBallistics(ts);
 }
 
@@ -470,8 +468,6 @@ void VolumeMeter::refreshColors()
 // stylesheet.
 inline void VolumeMeter::doLayout()
 {
-	QMutexLocker locker(&dataMutex);
-
 	if (displayNrAudioChannels) {
 		int meterSize = std::floor(22 / displayNrAudioChannels);
 		meterThickness = std::clamp(meterSize, 3, 6);
@@ -572,8 +568,6 @@ inline void VolumeMeter::calculateBallisticsForChannel(int channelNr, uint64_t t
 
 inline void VolumeMeter::calculateBallistics(uint64_t ts, qreal timeSinceLastRedraw)
 {
-	QMutexLocker locker(&dataMutex);
-
 	for (int channelNr = 0; channelNr < MAX_AUDIO_CHANNELS; channelNr++) {
 		calculateBallisticsForChannel(channelNr, ts, timeSinceLastRedraw);
 	}
@@ -759,7 +753,6 @@ void VolumeMeter::paintEvent(QPaintEvent *)
 	for (int channelNr = 0; channelNr < displayNrAudioChannels; channelNr++) {
 		int channelNrFixed = (displayNrAudioChannels == 1 && channels > 2) ? 2 : channelNr;
 
-		QMutexLocker locker(&dataMutex);
 		float peak = displayPeak[channelNrFixed];
 		float peakHold = displayPeakHold[channelNrFixed];
 		float magnitude = displayMagnitude[channelNrFixed];
@@ -767,7 +760,6 @@ void VolumeMeter::paintEvent(QPaintEvent *)
 		int peakPosition = meterLength - convertToInt(peak * scale);
 		int peakHoldPosition = meterLength - convertToInt(peakHold * scale);
 		int magnitudePosition = meterLength - convertToInt(magnitude * scale);
-		locker.unlock();
 
 		if (clipping) {
 			peakPosition = meterLength;
@@ -786,7 +778,7 @@ void VolumeMeter::paintEvent(QPaintEvent *)
 		// Draw audio meter peak bars
 		if (peakPosition >= clipPosition) {
 			if (!clipping) {
-				QTimer::singleShot(CLIP_FLASH_DURATION_MS, this, [&]() { clipping = false; });
+				QTimer::singleShot(CLIP_FLASH_DURATION_MS, this, [this]() { clipping = false; });
 				clipping = true;
 			}
 

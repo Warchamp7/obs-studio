@@ -67,8 +67,6 @@ private:
 	void paintHTicks(QPainter &painter, int x, int y, int width);
 	void paintVTicks(QPainter &painter, int x, int y, int height);
 
-	QMutex dataMutex;
-
 	bool recalculateLayout{true};
 	uint64_t currentLastUpdateTime{0};
 	float currentMagnitude[MAX_AUDIO_CHANNELS];
