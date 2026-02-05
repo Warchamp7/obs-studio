@@ -37,7 +37,7 @@ public:
 	~SourceSelectButton();
 
 	QPushButton *button();
-	QString text();
+	std::string uuid() const { return sourceUuid; };
 
 	void setRectVisible(bool visible);
 	void setPreload(bool preload);
@@ -50,6 +50,7 @@ protected:
 
 private:
 	OBSWeakSource weakSource;
+	std::string sourceUuid;
 	std::shared_ptr<Thumbnail> thumbnail;
 	QPointer<QLabel> image;
 

@@ -36,6 +36,13 @@ SourceSelectButton::SourceSelectButton(OBSWeakSource weak, QWidget *parent) : QF
 	}
 
 	const char *sourceName = obs_source_get_name(source);
+	const char *uuid = obs_source_get_uuid(source);
+
+	if (!sourceName || !uuid) {
+		return;
+	}
+
+	sourceUuid = uuid;
 
 	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
@@ -90,11 +97,6 @@ SourceSelectButton::~SourceSelectButton() {}
 QPushButton *SourceSelectButton::button()
 {
 	return button_;
-}
-
-QString SourceSelectButton::text()
-{
-	return label->text();
 }
 
 void SourceSelectButton::resizeEvent(QResizeEvent *)

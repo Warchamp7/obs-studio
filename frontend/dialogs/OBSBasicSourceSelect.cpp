@@ -449,10 +449,19 @@ void OBSBasicSourceSelect::updateExistingSources(int limit)
 		}
 
 		SourceSelectButton *newButton = new SourceSelectButton(weak, ui->existingListFrame);
-		std::string name = obs_source_get_name(source);
+		std::string uuid = obs_source_get_uuid(source);
 
 		existingFlowLayout->addWidget(newButton);
 		sourceButtons->addButton(newButton->button());
+
+		bool isSelected = false;
+		if (selectedItems.size() > 0) {
+			if (std::find(selectedItems.begin(), selectedItems.end(), uuid) != selectedItems.end()) {
+				isSelected = true;
+			}
+		}
+
+		newButton->button()->setChecked(isSelected);
 
 		if (!prevTabWidget) {
 			setTabOrder(ui->existingListFrame, newButton->button());
@@ -460,12 +469,17 @@ void OBSBasicSourceSelect::updateExistingSources(int limit)
 			setTabOrder(prevTabWidget, newButton->button());
 		}
 
-		connect(newButton, &SourceSelectButton::sourceRemoved, this, [this, newButton]() {
-			QSignalBlocker block(newButton);
-			newButton->button()->setChecked(false);
-			removeSelectedItem(newButton);
+		connect(newButton, &SourceSelectButton::sourceRemoved, this, [this, uuid]() {
+			auto sourceButton = findButtonForUuid(uuid);
+			if (!sourceButton) {
+				return;
+			}
 
-			newButton->deleteLater();
+			QSignalBlocker block(sourceButton);
+			sourceButton->button()->setChecked(false);
+			removeSelectedItem(uuid);
+
+			sourceButton->deleteLater();
 		});
 
 		prevTabWidget = newButton->button();
@@ -644,11 +658,13 @@ void OBSBasicSourceSelect::sourceButtonToggled(QAbstractButton *button, bool che
 
 	int selectedIndex = existingFlowLayout->indexOf(buttonParent);
 
+	std::string uuid = buttonParent->uuid();
+
 	if (ctrlDown && !shiftDown) {
 		if (checked) {
-			addSelectedItem(buttonParent);
+			addSelectedItem(uuid);
 		} else {
-			removeSelectedItem(buttonParent);
+			removeSelectedItem(uuid);
 		}
 		return;
 	} else if (shiftDown) {
@@ -672,7 +688,7 @@ void OBSBasicSourceSelect::sourceButtonToggled(QAbstractButton *button, bool che
 			auto entry = dynamic_cast<SourceSelectButton *>(widget);
 			if (entry) {
 				entry->button()->setChecked(true);
-				addSelectedItem(entry);
+				addSelectedItem(uuid);
 			}
 		}
 		sourceButtons->blockSignals(false);
@@ -682,10 +698,10 @@ void OBSBasicSourceSelect::sourceButtonToggled(QAbstractButton *button, bool che
 		bool reselectItem = selectedItems.size() > 1;
 		clearSelectedItems();
 		if (checked) {
-			addSelectedItem(buttonParent);
+			addSelectedItem(uuid);
 		} else if (reselectItem) {
 			button->setChecked(true);
-			addSelectedItem(buttonParent);
+			addSelectedItem(uuid);
 		}
 	}
 }
@@ -694,49 +710,47 @@ void OBSBasicSourceSelect::sourceDropped(QString uuid)
 {
 	OBSSourceAutoRelease source = obs_get_source_by_uuid(uuid.toStdString().c_str());
 	if (source) {
-		const char *name = obs_source_get_name(source);
 		bool visible = ui->sourceVisible->isChecked();
-
-		addExistingSource(name, visible);
+		addExistingSource(uuid.toStdString(), visible);
 	}
 }
 
-void OBSBasicSourceSelect::setSelectedSource(SourceSelectButton *button)
+void OBSBasicSourceSelect::setSelectedSource(std::string uuid)
 {
 	clearSelectedItems();
-	addSelectedItem(button);
+	addSelectedItem(uuid);
 }
 
-void OBSBasicSourceSelect::addSelectedItem(SourceSelectButton *button)
+void OBSBasicSourceSelect::addSelectedItem(std::string uuid)
 {
-	if (button == nullptr) {
-		return;
-	}
-
-	SourceSelectButton *buttonParent = dynamic_cast<SourceSelectButton *>(button->parentWidget());
-	lastSelectedIndex = existingFlowLayout->indexOf(buttonParent);
-
-	auto it = std::find(selectedItems.begin(), selectedItems.end(), button);
+	auto it = std::find(selectedItems.begin(), selectedItems.end(), uuid);
 	if (it == selectedItems.end()) {
-		selectedItems.push_back(button);
+		selectedItems.push_back(uuid);
 		emit selectedItemsChanged();
 	}
-}
 
-void OBSBasicSourceSelect::removeSelectedItem(SourceSelectButton *button)
-{
-	if (button == nullptr) {
+	auto button = findButtonForUuid(uuid);
+	if (!button) {
 		return;
 	}
 
-	SourceSelectButton *buttonParent = dynamic_cast<SourceSelectButton *>(button->parentWidget());
-	lastSelectedIndex = existingFlowLayout->indexOf(buttonParent);
+	lastSelectedIndex = existingFlowLayout->indexOf(button);
+}
 
-	auto it = std::find(selectedItems.begin(), selectedItems.end(), button);
+void OBSBasicSourceSelect::removeSelectedItem(std::string uuid)
+{
+	auto it = std::find(selectedItems.begin(), selectedItems.end(), uuid);
 	if (it != selectedItems.end()) {
 		selectedItems.erase(it);
 		emit selectedItemsChanged();
 	}
+
+	auto button = findButtonForUuid(uuid);
+	if (!button) {
+		return;
+	}
+
+	lastSelectedIndex = existingFlowLayout->indexOf(button);
 }
 
 void OBSBasicSourceSelect::clearSelectedItems()
@@ -746,15 +760,39 @@ void OBSBasicSourceSelect::clearSelectedItems()
 	}
 
 	sourceButtons->blockSignals(true);
-	for (auto &item : selectedItems) {
-		if (!item) {
-			continue;
+	for (auto &uuid : selectedItems) {
+		auto sourceButton = findButtonForUuid(uuid);
+		if (sourceButton) {
+			sourceButton->button()->setChecked(false);
 		}
-		item->button()->setChecked(false);
 	}
 	sourceButtons->blockSignals(false);
 	selectedItems.clear();
 	emit selectedItemsChanged();
+}
+
+SourceSelectButton *OBSBasicSourceSelect::findButtonForUuid(std::string uuid)
+{
+	QLayout *layout = ui->existingListFrame->flowLayout();
+
+	for (int i = 0; i <= layout->count(); i++) {
+		auto layoutItem = existingFlowLayout->itemAt(i);
+		if (!layoutItem || !layoutItem->widget()) {
+			continue;
+		}
+
+		auto widget = layoutItem->widget();
+		if (!widget) {
+			continue;
+		}
+
+		auto entry = dynamic_cast<SourceSelectButton *>(widget);
+		if (entry) {
+			return entry;
+		}
+	}
+
+	return nullptr;
 }
 
 void OBSBasicSourceSelect::createNewSource()
@@ -815,10 +853,11 @@ void OBSBasicSourceSelect::createNewSource()
 	close();
 }
 
-void OBSBasicSourceSelect::addExistingSource(QString name, bool visible)
+void OBSBasicSourceSelect::addExistingSource(std::string uuid, bool visible)
 {
-	OBSSourceAutoRelease source = obs_get_source_by_name(name.toStdString().c_str());
+	OBSSourceAutoRelease source = obs_get_source_by_name(uuid.c_str());
 	if (source) {
+		QString name = obs_source_get_name(source);
 		AddExisting(source.Get(), visible, false);
 
 		OBSBasic *main = OBSBasic::Get();
@@ -866,9 +905,8 @@ void OBSBasicSourceSelect::addSelectedSources()
 
 	bool visible = ui->sourceVisible->isChecked();
 
-	for (auto &item : selectedItems) {
-		QString sourceName = item->text();
-		addExistingSource(sourceName, visible);
+	for (auto &uuid : selectedItems) {
+		addExistingSource(uuid, visible);
 	}
 	close();
 }

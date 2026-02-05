@@ -59,14 +59,16 @@ private:
 	void setSelectedSourceType(QListWidgetItem *item);
 
 	int lastSelectedIndex = -1;
-	std::vector<QPointer<SourceSelectButton>> selectedItems;
-	void setSelectedSource(SourceSelectButton *button);
-	void addSelectedItem(SourceSelectButton *button);
-	void removeSelectedItem(SourceSelectButton *button);
+	std::vector<std::string> selectedItems;
+	void setSelectedSource(std::string uuid);
+	void addSelectedItem(std::string uuid);
+	void removeSelectedItem(std::string uuid);
 	void clearSelectedItems();
 
+	SourceSelectButton *findButtonForUuid(std::string uuid);
+
 	void createNewSource();
-	void addExistingSource(QString name, bool visible);
+	void addExistingSource(std::string uuid, bool visible);
 
 	void checkSourceVisibility();
 
