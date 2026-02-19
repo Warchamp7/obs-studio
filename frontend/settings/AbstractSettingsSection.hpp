@@ -20,14 +20,17 @@
 #include <models/SettingsItem.hpp>
 #include <settings/SettingsManager.hpp>
 
-#include <QCheckBox>
-#include <QComboBox>
 #include <QPointer>
-#include <QSpinBox>
 #include <QWidget>
+
+class QCheckBox;
+class QComboBox;
+class QDoubleSpinBox;
+class QSpinBox;
 
 class SettingsManager;
 class AbstractSettingsPage;
+
 class AbstractSettingsSection : public QObject {
 	Q_OBJECT
 
@@ -105,12 +108,15 @@ public:
 	SettingsItem *registerSetting(std::string settingsName, double defaultValue,
 				      ConfigType config = ConfigType::UserConfig);
 
+	SettingsItem *connectSettingWidget(const std::string &name, QLineEdit *widget);
 	SettingsItem *connectSettingWidget(const std::string &name, QSpinBox *widget);
 	SettingsItem *connectSettingWidget(const std::string &name, QDoubleSpinBox *widget);
 	SettingsItem *connectSettingWidget(const std::string &name, QComboBox *widget);
 	SettingsItem *connectSettingWidget(const std::string &name, QCheckBox *widget);
 	SettingsItem *connectSettingWidget(const std::string &name, QSlider *widget);
 
+	void applyItemValue(SettingsItem *item, QLineEdit *widget);
+	void applyItemValue(SettingsItem *item, QLineEdit *widget, std::function<QVariant(QVariant)>);
 	void applyItemValue(SettingsItem *item, QSpinBox *widget);
 	void applyItemValue(SettingsItem *item, QSpinBox *widget, std::function<QVariant(QVariant)>);
 	void applyItemValue(SettingsItem *item, QDoubleSpinBox *widget);
@@ -122,6 +128,8 @@ public:
 	void applyItemValue(SettingsItem *item, QSlider *widget);
 	void applyItemValue(SettingsItem *item, QSlider *widget, std::function<QVariant(QVariant)>);
 
+	void bindPendingValue(SettingsItem *item, QLineEdit *widget);
+	void bindPendingValue(SettingsItem *item, QLineEdit *widget, std::function<QVariant(QVariant)>);
 	void bindPendingValue(SettingsItem *item, QSpinBox *widget);
 	void bindPendingValue(SettingsItem *item, QSpinBox *widget, std::function<QVariant(QVariant)>);
 	void bindPendingValue(SettingsItem *item, QDoubleSpinBox *widget);
@@ -133,6 +141,8 @@ public:
 	void bindPendingValue(SettingsItem *item, QSlider *widget);
 	void bindPendingValue(SettingsItem *item, QSlider *widget, std::function<QVariant(QVariant)>);
 
+	void bindItemUpdates(SettingsItem *item, QLineEdit *widget);
+	void bindItemUpdates(SettingsItem *item, QLineEdit *widget, std::function<QVariant(QVariant)>);
 	void bindItemUpdates(SettingsItem *item, QSpinBox *widget);
 	void bindItemUpdates(SettingsItem *item, QSpinBox *widget, std::function<QVariant(QVariant)>);
 	void bindItemUpdates(SettingsItem *item, QDoubleSpinBox *widget);

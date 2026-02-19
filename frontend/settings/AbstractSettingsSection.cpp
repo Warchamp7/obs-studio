@@ -237,6 +237,20 @@ SettingsItem *AbstractSettingsSection::registerSetting(std::string settingsName,
 	return manager().registerSetting(section(), settingsName, defaultValue, config);
 }
 
+SettingsItem *AbstractSettingsSection::connectSettingWidget(const std::string &name, QLineEdit *widget)
+{
+	SettingsItem *item = findSettingsItem(name);
+	if (item) {
+		applyItemValue(item, widget);
+		bindPendingValue(item, widget);
+		bindItemUpdates(item, widget);
+	} else {
+		blog(LOG_WARNING, "-- No setting is registered for %s -> %s. ", section().c_str(), name.c_str());
+	}
+
+	return item;
+}
+
 SettingsItem *AbstractSettingsSection::connectSettingWidget(const std::string &name, QSpinBox *widget)
 {
 	SettingsItem *item = findSettingsItem(name);
@@ -309,6 +323,23 @@ SettingsItem *AbstractSettingsSection::connectSettingWidget(const std::string &n
 	}
 
 	return item;
+}
+
+void AbstractSettingsSection::applyItemValue(SettingsItem *item, QLineEdit *widget)
+{
+	applyItemValue(item, widget, noValueTransform);
+}
+
+void AbstractSettingsSection::applyItemValue(SettingsItem *item, QLineEdit *widget,
+					     std::function<QVariant(QVariant)> transform)
+{
+	QVariant settingValue = transform(manager().getValue(item));
+
+	if (settingValue.canConvert<QString>()) {
+		widget->blockSignals(true);
+		widget->setText(settingValue.toString());
+		widget->blockSignals(false);
+	}
 }
 
 void AbstractSettingsSection::applyItemValue(SettingsItem *item, QSpinBox *widget)
@@ -412,6 +443,23 @@ void AbstractSettingsSection::applyItemValue(SettingsItem *item, QSlider *widget
 	}
 }
 
+void AbstractSettingsSection::bindPendingValue(SettingsItem *item, QLineEdit *widget)
+{
+	bindPendingValue(item, widget, noValueTransform);
+}
+
+void AbstractSettingsSection::bindPendingValue(SettingsItem *item, QLineEdit *widget,
+					       std::function<QVariant(QVariant)> transform)
+{
+	connect(widget, &QLineEdit::textChanged, item, [item, transform](QString value) {
+		QString newValue = transform(value).toString();
+
+		if (!newValue.isNull()) {
+			item->setPending(newValue);
+		}
+	});
+}
+
 void AbstractSettingsSection::bindPendingValue(SettingsItem *item, QSpinBox *widget)
 {
 	bindPendingValue(item, widget, noValueTransform);
@@ -421,10 +469,9 @@ void AbstractSettingsSection::bindPendingValue(SettingsItem *item, QSpinBox *wid
 					       std::function<QVariant(QVariant)> transform)
 {
 	connect(widget, &QSpinBox::textChanged, item, [item, transform](QString value) {
-		bool valid;
-		int newValue = transform(value).toInt(&valid);
+		QString newValue = transform(value).toString();
 
-		if (valid) {
+		if (!newValue.isNull()) {
 			item->setPending(newValue);
 		}
 	});
@@ -498,6 +545,25 @@ void AbstractSettingsSection::bindPendingValue(SettingsItem *item, QSlider *widg
 
 		if (valid) {
 			item->setPending(newValue);
+		}
+	});
+}
+
+void AbstractSettingsSection::bindItemUpdates(SettingsItem *item, QLineEdit *widget)
+{
+	bindItemUpdates(item, widget, noValueTransform);
+}
+
+void AbstractSettingsSection::bindItemUpdates(SettingsItem *item, QLineEdit *widget,
+					      std::function<QVariant(QVariant)> transform)
+{
+	connect(item, &SettingsItem::valueChanged, widget, [this, widget, transform](QVariant newValue) {
+		QVariant itemValue = transform(newValue);
+
+		if (itemValue.canConvert<QString>()) {
+			widget->blockSignals(true);
+			widget->setText(itemValue.toString());
+			widget->blockSignals(false);
 		}
 	});
 }
