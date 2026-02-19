@@ -25,33 +25,36 @@ static int CountVideoSources()
 	return count;
 }
 
-bool UIValidation::NoSourcesConfirmation(QWidget *parent)
+void UIValidation::NoSourcesConfirmation(QWidget *parent, std::function<void(bool confirm)> callback)
 {
 	// There are sources, don't need confirmation
-	if (CountVideoSources() != 0)
-		return true;
+	if (CountVideoSources() != 0) {
+		callback(true);
+		return;
+	}
 
 	// Ignore no video if no parent is visible to alert on
-	if (!parent->isVisible())
-		return true;
+	if (!parent->isVisible()) {
+		callback(true);
+		return;
+	}
 
 	QString msg = QTStr("NoSources.Text");
 	msg += "\n\n";
 	msg += QTStr("NoSources.Text.AddSource");
 
-	QMessageBox messageBox(parent);
-	messageBox.setWindowTitle(QTStr("NoSources.Title"));
-	messageBox.setText(msg);
+	QMessageBox *messageBox = new QMessageBox(parent);
+	messageBox->setWindowTitle(QTStr("NoSources.Title"));
+	messageBox->setText(msg);
 
-	QAbstractButton *yesButton = messageBox.addButton(QTStr("Yes"), QMessageBox::YesRole);
-	messageBox.addButton(QTStr("No"), QMessageBox::NoRole);
-	messageBox.setIcon(QMessageBox::Question);
-	messageBox.exec();
+	messageBox->addButton(QMessageBox::Yes);
+	messageBox->addButton(QMessageBox::No);
+	messageBox->setIcon(QMessageBox::Question);
 
-	if (messageBox.clickedButton() != yesButton)
-		return false;
-	else
-		return true;
+	QObject::connect(messageBox, &QDialog::finished, parent,
+			 [messageBox, callback](int result) { callback(result == QMessageBox::Yes); });
+
+	messageBox->open();
 }
 
 StreamSettingsAction UIValidation::StreamSettingsConfirmation(QWidget *parent, OBSService service)

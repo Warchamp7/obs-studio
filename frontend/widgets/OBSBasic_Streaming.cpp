@@ -373,77 +373,110 @@ void OBSBasic::StreamingStop(int code, QString last_error)
 void OBSBasic::StreamActionTriggered()
 {
 	if (outputHandler->StreamingActive()) {
-		bool confirm = config_get_bool(App()->GetUserConfig(), "BasicWindow", "WarnBeforeStoppingStream");
+		StopStreamingStep1();
+	} else {
+		StartStreamingStep1();
+	}
+}
+
+void OBSBasic::StopStreamingStep1()
+{
+	bool confirm = config_get_bool(App()->GetUserConfig(), "BasicWindow", "WarnBeforeStoppingStream");
 
 #ifdef YOUTUBE_ENABLED
-		if (isVisible() && auth && IsYouTubeService(auth->service()) && autoStopBroadcast) {
-			QMessageBox::StandardButton button = OBSMessageBox::question(
-				this, QTStr("ConfirmStop.Title"), QTStr("YouTube.Actions.AutoStopStreamingWarning"),
-				QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+	if (isVisible() && auth && IsYouTubeService(auth->service()) && autoStopBroadcast) {
+		QMessageBox::StandardButton button = OBSMessageBox::question(
+			this, QTStr("ConfirmStop.Title"), QTStr("YouTube.Actions.AutoStopStreamingWarning"),
+			QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
-			if (button == QMessageBox::No)
-				return;
-
-			confirm = false;
-		}
-#endif
-		if (confirm && isVisible()) {
-			QMessageBox::StandardButton button =
-				OBSMessageBox::question(this, QTStr("ConfirmStop.Title"), QTStr("ConfirmStop.Text"),
-							QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-
-			if (button == QMessageBox::No)
-				return;
-		}
-
-		StopStreaming();
-	} else {
-		if (!UIValidation::NoSourcesConfirmation(this))
+		if (button == QMessageBox::No)
 			return;
 
-		Auth *auth = GetAuth();
-
-		auto action = (auth && auth->external()) ? StreamSettingsAction::ContinueStream
-							 : UIValidation::StreamSettingsConfirmation(this, service);
-		switch (action) {
-		case StreamSettingsAction::ContinueStream:
-			break;
-		case StreamSettingsAction::OpenSettings:
-			on_action_Settings_triggered();
-			return;
-		case StreamSettingsAction::Cancel:
-			return;
-		}
-
-		bool confirm = config_get_bool(App()->GetUserConfig(), "BasicWindow", "WarnBeforeStartingStream");
-
-		bool bwtest = false;
-
-		if (this->auth) {
-			OBSDataAutoRelease settings = obs_service_get_settings(service);
-			bwtest = obs_data_get_bool(settings, "bwtest");
-			// Disable confirmation if this is going to open broadcast setup
-			if (auth && auth->broadcastFlow() && !broadcastReady && !broadcastActive)
-				confirm = false;
-		}
-
-		if (bwtest && isVisible()) {
-			QMessageBox::StandardButton button = OBSMessageBox::question(this, QTStr("ConfirmBWTest.Title"),
-										     QTStr("ConfirmBWTest.Text"));
-
-			if (button == QMessageBox::No)
-				return;
-		} else if (confirm && isVisible()) {
-			QMessageBox::StandardButton button =
-				OBSMessageBox::question(this, QTStr("ConfirmStart.Title"), QTStr("ConfirmStart.Text"),
-							QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-
-			if (button == QMessageBox::No)
-				return;
-		}
-
-		StartStreaming();
+		confirm = false;
 	}
+#endif
+
+	StopStreamingStep2();
+}
+
+void OBSBasic::StopStreamingStep2()
+{
+	bool confirm = config_get_bool(App()->GetUserConfig(), "BasicWindow", "WarnBeforeStoppingStream");
+
+	if (confirm && isVisible()) {
+		QMessageBox::StandardButton button =
+			OBSMessageBox::question(this, QTStr("ConfirmStop.Title"), QTStr("ConfirmStop.Text"),
+						QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+
+		if (button == QMessageBox::No)
+			return;
+	}
+
+	StopStreaming();
+}
+
+void OBSBasic::StartStreamingStep1()
+{
+	UIValidation::NoSourcesConfirmation(this, [this](bool confirm) {
+		if (confirm) {
+			StartStreamingStep2();
+		}
+	});
+}
+
+void OBSBasic::StartStreamingStep2()
+{
+	Auth *auth = GetAuth();
+
+	auto action = (auth && auth->external()) ? StreamSettingsAction::ContinueStream
+						 : UIValidation::StreamSettingsConfirmation(this, service);
+	switch (action) {
+	case StreamSettingsAction::ContinueStream:
+		StartStreamingStep3();
+		break;
+	case StreamSettingsAction::OpenSettings:
+		on_action_Settings_triggered();
+		return;
+	case StreamSettingsAction::Cancel:
+		return;
+	}
+}
+
+void OBSBasic::StartStreamingStep3()
+{
+	bool confirm = config_get_bool(App()->GetUserConfig(), "BasicWindow", "WarnBeforeStartingStream");
+
+	bool bwtest = false;
+
+	if (this->auth) {
+		OBSDataAutoRelease settings = obs_service_get_settings(service);
+		bwtest = obs_data_get_bool(settings, "bwtest");
+		// Disable confirmation if this is going to open broadcast setup
+		if (auth && auth->broadcastFlow() && !broadcastReady && !broadcastActive)
+			confirm = false;
+	}
+
+	if (bwtest && isVisible()) {
+		QMessageBox::StandardButton button =
+			OBSMessageBox::question(this, QTStr("ConfirmBWTest.Title"), QTStr("ConfirmBWTest.Text"));
+
+		if (button == QMessageBox::No)
+			return;
+	} else if (confirm && isVisible()) {
+		QMessageBox::StandardButton button =
+			OBSMessageBox::question(this, QTStr("ConfirmStart.Title"), QTStr("ConfirmStart.Text"),
+						QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+
+		if (button == QMessageBox::No)
+			return;
+	}
+
+	StartStreamingStep4();
+}
+
+void OBSBasic::StartStreamingStep4()
+{
+	StartStreaming();
 }
 
 bool OBSBasic::StreamingActive()

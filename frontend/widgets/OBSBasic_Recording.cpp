@@ -256,10 +256,11 @@ void OBSBasic::RecordActionTriggered()
 		}
 		StopRecording();
 	} else {
-		if (!UIValidation::NoSourcesConfirmation(this))
-			return;
-
-		StartRecording();
+		UIValidation::NoSourcesConfirmation(this, [this](bool confirm) {
+			if (confirm) {
+				StartRecording();
+			}
+		});
 	}
 }
 

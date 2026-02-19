@@ -98,10 +98,11 @@ void OBSBasic::VirtualCamActionTriggered()
 	if (outputHandler->VirtualCamActive()) {
 		StopVirtualCam();
 	} else {
-		if (!UIValidation::NoSourcesConfirmation(this))
-			return;
-
-		StartVirtualCam();
+		UIValidation::NoSourcesConfirmation(this, [this](bool confirm) {
+			if (confirm) {
+				StartVirtualCam();
+			}
+		});
 	}
 }
 

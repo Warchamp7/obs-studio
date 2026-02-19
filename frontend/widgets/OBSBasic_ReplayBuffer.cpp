@@ -73,26 +73,28 @@ void OBSBasic::StartReplayBuffer()
 	if (disableOutputsRef)
 		return;
 
-	if (!UIValidation::NoSourcesConfirmation(this))
-		return;
+	UIValidation::NoSourcesConfirmation(this, [this](bool confirm) {
+		if (!confirm)
+			return;
 
-	if (!OutputPathValid()) {
-		OutputPathInvalidMessage();
-		return;
-	}
+		if (!OutputPathValid()) {
+			OutputPathInvalidMessage();
+			return;
+		}
 
-	if (LowDiskSpace()) {
-		DiskSpaceMessage();
-		return;
-	}
+		if (LowDiskSpace()) {
+			DiskSpaceMessage();
+			return;
+		}
 
-	OnEvent(OBS_FRONTEND_EVENT_REPLAY_BUFFER_STARTING);
+		OnEvent(OBS_FRONTEND_EVENT_REPLAY_BUFFER_STARTING);
 
-	SaveProject();
+		SaveProject();
 
-	if (outputHandler->StartReplayBuffer() && os_atomic_load_bool(&recording_paused)) {
-		ShowReplayBufferPauseWarning();
-	}
+		if (outputHandler->StartReplayBuffer() && os_atomic_load_bool(&recording_paused)) {
+			ShowReplayBufferPauseWarning();
+		}
+	});
 }
 
 void OBSBasic::ReplayBufferStopping()

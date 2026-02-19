@@ -17,7 +17,7 @@ public:
 	/* Confirm video about to record or stream has sources.  Shows alert
 	 * box notifying there are no video sources Returns true if user clicks
 	 * "Yes" Returns false if user clicks "No" */
-	static bool NoSourcesConfirmation(QWidget *parent);
+	static void NoSourcesConfirmation(QWidget *parent, std::function<void(bool confirm)> callback);
 
 	/* Check streaming requirements, shows warning with options to open
 	 * settings, cancel stream, or attempt connection anyways.  If setup
