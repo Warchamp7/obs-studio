@@ -454,7 +454,7 @@ static obs_source_t *obs_source_create_internal(const char *id, const char *name
 		 *
 		 * XXX: Fix design flaws with filters */
 		if (info->type == OBS_SOURCE_TYPE_FILTER)
-		private = true;
+			private = true;
 	}
 
 	source->mute_unmute_key = OBS_INVALID_HOTKEY_PAIR_ID;
@@ -710,6 +710,14 @@ void obs_source_destroy(struct obs_source *source)
 {
 	if (!obs_source_valid(source, "obs_source_destroy"))
 		return;
+
+	if (!source->removed) {
+		/* Ensure that the source_remove signal is sent */
+		source->removed = true;
+		obs_source_dosignal(source, "source_remove", "remove");
+		if (source->canvas)
+			obs_canvas_remove_source(source);
+	}
 
 	if (os_atomic_set_long(&source->destroying, true) == true) {
 		blog(LOG_ERROR, "Double destroy just occurred. "
