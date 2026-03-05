@@ -639,8 +639,17 @@ static inline void render_child(obs_source_t *transition, obs_source_t *child, s
 	}
 }
 
+static inline void handle_stop(obs_source_t *transition)
+{
+	if (transition->info.transition_stop)
+		transition->info.transition_stop(transition->context.data);
+	obs_source_dosignal(transition, "source_transition_stop", "transition_stop");
+}
+
 static void obs_transition_stop(obs_source_t *transition)
 {
+	handle_stop(transition);
+
 	obs_source_t *old_child = transition->transition_sources[0];
 
 	if (old_child && transition->transition_source_active[0])
@@ -651,13 +660,6 @@ static void obs_transition_stop(obs_source_t *transition)
 	transition->transition_source_active[1] = false;
 	transition->transition_sources[0] = transition->transition_sources[1];
 	transition->transition_sources[1] = NULL;
-}
-
-static inline void handle_stop(obs_source_t *transition)
-{
-	if (transition->info.transition_stop)
-		transition->info.transition_stop(transition->context.data);
-	obs_source_dosignal(transition, "source_transition_stop", "transition_stop");
 }
 
 void obs_transition_force_stop(obs_source_t *transition)
@@ -758,8 +760,9 @@ void obs_transition_video_render2(obs_source_t *transition, obs_transition_video
 
 	if (video_stopped)
 		obs_source_dosignal(transition, "source_transition_video_stop", "transition_video_stop");
-	if (stopped)
-		handle_stop(transition);
+	if (stopped) {
+		// handle_stop(transition);
+	}
 }
 
 static enum gs_color_space mix_spaces(enum gs_color_space a, enum gs_color_space b)
@@ -846,8 +849,9 @@ bool obs_transition_video_render_direct(obs_source_t *transition, enum obs_trans
 
 	if (video_stopped)
 		obs_source_dosignal(transition, "source_transition_video_stop", "transition_video_stop");
-	if (stopped)
-		handle_stop(transition);
+	if (stopped) {
+		// handle_stop(transition);
+	}
 
 	return transitioning;
 }
@@ -991,7 +995,7 @@ bool obs_transition_audio_render(obs_source_t *transition, uint64_t *ts_out, str
 	}
 
 	if (stopped)
-		handle_stop(transition);
+		// handle_stop(transition);
 
 	*ts_out = min_ts;
 	return !!min_ts;
