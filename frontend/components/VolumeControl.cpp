@@ -315,8 +315,8 @@ void VolumeControl::setLayoutVertical(bool vertical)
 		meterLayout->setContentsMargins(0, 0, 0, 0);
 		meterLayout->setSpacing(0);
 
-		meterLayout->addWidget(slider);
 		meterLayout->addWidget(volumeMeter);
+		meterLayout->addWidget(slider);
 		meterLayout->setStretch(0, 2);
 		meterLayout->setStretch(1, 2);
 
