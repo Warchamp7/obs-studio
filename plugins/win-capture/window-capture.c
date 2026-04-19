@@ -156,7 +156,7 @@ static enum window_capture_method choose_method(enum window_capture_method metho
 		if (astrstri(current_class, *class) != NULL) {
 			return METHOD_WGC;
 		}
-		class ++;
+		class++;
 	}
 
 	class = wgc_whole_match_classes;
@@ -164,7 +164,7 @@ static enum window_capture_method choose_method(enum window_capture_method metho
 		if (astrcmpi(current_class, *class) == 0) {
 			return METHOD_WGC;
 		}
-		class ++;
+		class++;
 	}
 
 	return METHOD_BITBLT;
