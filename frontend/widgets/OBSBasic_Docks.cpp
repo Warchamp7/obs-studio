@@ -21,6 +21,8 @@
 
 #include <qt-wrappers.hpp>
 
+#include <QPainter>
+
 void setupDockAction(QDockWidget *dock)
 {
 	QAction *action = dock->toggleViewAction();
@@ -143,6 +145,8 @@ void OBSBasic::addDockWidget(Qt::DockWidgetArea area, QDockWidget *dock, bool ex
 	setupDockAction(dock);
 	dock->setFeatures(features);
 	QMainWindow::addDockWidget(area, dock);
+
+	dock->installEventFilter(dockOrchestrator);
 
 #ifdef BROWSER_AVAILABLE
 	if (extraBrowser && extraBrowserMenuDocksSeparator.isNull())

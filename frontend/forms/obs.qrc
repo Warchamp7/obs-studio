@@ -1,7 +1,16 @@
 <RCC>
   <qresource prefix="/res">
+    <file>images/dock-stack.svg</file>
+    <file>images/dock-left.svg</file>
+    <file>images/dock-right.svg</file>
+    <file>images/split-dock-down.svg</file>
+    <file>images/split-dock-left.svg</file>
+    <file>images/split-dock-right.svg</file>
+    <file>images/split-dock-up.svg</file>
     <file>images/layout-horizontal.svg</file>
     <file>images/layout-vertical.svg</file>
+    <file>images/left-symbolic.svg</file>
+    <file>images/right-symbolic.svg</file>
     <file>images/close.svg</file>
     <file>images/headphones.svg</file>
     <file>images/save.svg</file>
@@ -90,7 +99,7 @@
     <file>images/settings/accessibility.svg</file>
     <file>images/settings/appearance.svg</file>
   </qresource>
-  <qresource prefix="">
+  <qresource>
     <file>fonts/OpenSans-Regular.ttf</file>
     <file>fonts/OpenSans-Bold.ttf</file>
     <file>fonts/OpenSans-Italic.ttf</file>

@@ -2757,3 +2757,26 @@ AlignmentSelector::indicator:disabled {
 AlignmentSelector::indicator:checked:disabled {
     background: var(--grey3);
 }
+
+DockTarget QPushButton {
+    background: rgba(20, 20, 30, .7);
+    border: 1px solid var(--grey3);
+    padding: 0;
+    margin: 0;
+    width: 100px;
+    max-width: 100px;
+    height: 100px;
+    max-height: 100px;
+    icon-size: 40px;
+}
+
+DockTarget QPushButton:checked {
+    background: var(--primary_dark);
+    border-color: var(--primary_light);
+}
+
+DockVisual QFrame {
+    background: rgba(113, 140, 220, 0.55);
+    padding: var(--spacing_base);
+    border: 1px solid var(--primary);
+}

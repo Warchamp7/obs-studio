@@ -35,6 +35,8 @@ target_sources(
     components/DeviceCaptureToolbar.hpp
     components/DisplayCaptureToolbar.cpp
     components/DisplayCaptureToolbar.hpp
+    components/DockRegion.cpp
+    components/DockRegion.hpp
     components/EditWidget.hpp
     components/FocusList.cpp
     components/FocusList.hpp

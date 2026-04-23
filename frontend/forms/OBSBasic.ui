@@ -69,7 +69,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1280</width>
+     <width>1474</width>
      <height>22</height>
     </rect>
    </property>
@@ -267,7 +267,7 @@
     </widget>
     <widget class="QMenu" name="multiviewProjectorMenu">
      <property name="title">
-      <string>Projector.Open.Multiview</string>
+      <string>MultiviewProjector</string>
      </property>
     </widget>
     <action name="resetUI">
@@ -295,6 +295,7 @@
     <addaction name="stats"/>
     <addaction name="separator"/>
     <addaction name="multiviewProjectorMenu"/>
+    <addaction name="multiviewProjectorWindowed"/>
     <addaction name="separator"/>
     <addaction name="actionAlwaysOnTop"/>
    </widget>
@@ -402,7 +403,6 @@
           <property name="defaultDropAction">
            <enum>Qt::TargetMoveAction</enum>
           </property>
-          <!-- Spacing must be 0 due to QTBUG-106395 -->
           <property name="spacing">
            <number>0</number>
           </property>
@@ -534,7 +534,6 @@
           <property name="selectionMode">
            <enum>QAbstractItemView::ExtendedSelection</enum>
           </property>
-          <!-- Spacing must be 0 due to QTBUG-106395 -->
           <property name="spacing">
            <number>0</number>
           </property>
@@ -1523,7 +1522,7 @@
     <string>Add</string>
    </property>
    <property name="toolTip">
-    <string>AddScene</string>
+    <string>Basic.Main.AddSceneDlg.Title</string>
    </property>
    <property name="class" stdset="0">
     <string notr="true">icon-plus</string>
@@ -1923,12 +1922,12 @@
   </action>
   <action name="actionImportSceneCollection">
    <property name="text">
-    <string>Basic.MainMenu.Import</string>
+    <string>Import</string>
    </property>
   </action>
   <action name="actionExportSceneCollection">
    <property name="text">
-    <string>Basic.MainMenu.Export</string>
+    <string>Export</string>
    </property>
   </action>
   <action name="actionShowMissingFiles">
@@ -1963,12 +1962,12 @@
   </action>
   <action name="actionImportProfile">
    <property name="text">
-    <string>Basic.MainMenu.Import</string>
+    <string>Import</string>
    </property>
   </action>
   <action name="actionExportProfile">
    <property name="text">
-    <string>Basic.MainMenu.Export</string>
+    <string>Export</string>
    </property>
   </action>
   <action name="actionShowSettingsFolder">
@@ -2071,6 +2070,11 @@
   <action name="stats">
    <property name="text">
     <string>Basic.Stats</string>
+   </property>
+  </action>
+  <action name="multiviewProjectorWindowed">
+   <property name="text">
+    <string>MultiviewWindowed</string>
    </property>
   </action>
   <action name="resetDocks">

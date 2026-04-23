@@ -517,12 +517,15 @@ OBSBasic::OBSBasic(QWidget *parent) : OBSMainWindow(parent), undo_s(ui), ui(new 
 	addNudge(Qt::SHIFT | Qt::Key_Left, MoveDir::Left, 10);
 	addNudge(Qt::SHIFT | Qt::Key_Right, MoveDir::Right, 10);
 
+	dockOrchestrator = new DockController(this);
+
 	/* Setup dock toggle action
 	 * And hide all docks before restoring parent geometry */
-#define SETUP_DOCK(dock)                                    \
-	setupDockAction(dock);                              \
-	ui->menuDocks->addAction(dock->toggleViewAction()); \
-	dock->setVisible(false);
+#define SETUP_DOCK(dock)                                                     \
+	setupDockAction(dock);                                               \
+	ui->menuDocks->addAction(dock->toggleViewAction());                  \
+	dock->setVisible(false);                                             \
+	dock->installEventFilter(dockOrchestrator);
 
 	SETUP_DOCK(ui->scenesDock);
 	SETUP_DOCK(ui->sourcesDock);

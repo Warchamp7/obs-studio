@@ -24,6 +24,7 @@
 #include <components/AccessibleAlignmentSelector.hpp>
 #include <oauth/Auth.hpp>
 #include <utility/BasicOutputHandler.hpp>
+#include <utility/DockEventFilter.hpp>
 #include <utility/OBSCanvas.hpp>
 #include <utility/PreviewProgramSizeObserver.hpp>
 #include <utility/VCamConfig.hpp>
@@ -433,6 +434,10 @@ public slots:
 	 * -------------------------------------
 	 */
 private:
+	QPointer<DockController> dockOrchestrator;
+	
+	static constexpr int sideRegionWidth = 48;
+
 	QPointer<QDockWidget> statsDock;
 	QByteArray startingDockLayout;
 	QStringList extraDockNames;
