@@ -33,12 +33,12 @@ class OBSBasicSourceSelect : public QDialog {
 	Q_OBJECT
 
 public:
-	OBSBasicSourceSelect(OBSBasic *parent, undo_stack &undo_s);
+	OBSBasicSourceSelect(OBSBasic *parent, OBSScene destination, undo_stack &undo_s);
 	~OBSBasicSourceSelect();
 
 	OBSSource newSource;
 
-	static void sourcePaste(SourceCopyInfo &info, bool duplicate);
+	static void sourcePaste(OBSSource destinationSource, SourceCopyInfo &info, bool duplicate);
 
 protected:
 	void showEvent(QShowEvent *event) override;
@@ -73,6 +73,9 @@ private:
 
 	SourceSelectButton *findButtonForUuid(const std::string &uuid);
 
+	OBSWeakSource destinationSceneWeakSource;
+	OBSSource getDestinationSceneSource();
+
 	void createNew();
 	void addExisting(const std::string &uuid, bool visible);
 
@@ -83,6 +86,8 @@ signals:
 	void selectedItemsChanged();
 
 public slots:
+	void setDestinationScene(OBSScene destination);
+
 	void on_createNewSource_clicked(bool checked);
 	void addSelectedSources();
 

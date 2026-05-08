@@ -804,7 +804,7 @@ void OBSBasic::AddSourceDialog()
 		addWindow->close();
 	}
 
-	addWindow = new OBSBasicSourceSelect(this, undo_s);
+	addWindow = new OBSBasicSourceSelect(this, GetCurrentScene(), undo_s);
 	addWindow->show();
 
 	addWindow->setAttribute(Qt::WA_DeleteOnClose, true);

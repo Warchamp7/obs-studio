@@ -21,6 +21,7 @@
 
 #include <components/MenuButton.hpp>
 #include <dialogs/NameDialog.hpp>
+#include <dialogs/OBSBasicSourceSelect.hpp>
 #include <utility/display-helpers.hpp>
 #include <utility/QuickTransition.hpp>
 
@@ -690,6 +691,11 @@ void OBSBasic::SetCurrentScene(OBSSource scene, bool force)
 
 	UpdateContextBar(true);
 	UpdatePreviewProgramIndicators();
+
+	// Horribly cursed until the scenes list/preview scene is decoupled.
+	if (addWindow) {
+		addWindow->setDestinationScene(obs_scene_from_source(scene));
+	}
 
 	if (scene) {
 		bool userSwitched = (!force && !disableSaving);

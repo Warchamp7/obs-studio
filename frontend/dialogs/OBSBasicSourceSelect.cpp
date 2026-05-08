@@ -147,24 +147,29 @@ void setupSceneItem(void *_data, obs_scene_t *scene)
 	data->scene_item = sceneitem;
 }
 
-std::optional<OBSSceneItem> setupExistingSource(std::string_view uuid, bool visible, bool duplicate,
-						SourceCopyInfo *info = nullptr)
+std::optional<OBSSceneItem> setupExistingSource(std::string_view sourceUuid, std::string_view sceneUuid, bool visible,
+						bool duplicate, SourceCopyInfo *info = nullptr)
 {
-	OBSSourceAutoRelease temp = obs_get_source_by_uuid(uuid.data());
-	if (!temp) {
+	OBSSourceAutoRelease tempSource = obs_get_source_by_uuid(sourceUuid.data());
+	if (!tempSource) {
 		return std::nullopt;
 	}
 
-	OBSBasic *main = OBSBasic::Get();
-	OBSScene scene = main->GetCurrentScene();
-	if (!scene) {
+	OBSSourceAutoRelease tempScene = obs_get_source_by_uuid(sceneUuid.data());
+	if (!tempScene) {
 		return std::nullopt;
 	}
+
+	if (!obs_source_is_scene(tempScene) || obs_source_is_group(tempScene)) {
+		return std::nullopt;
+	}
+
+	OBSScene scene = obs_scene_from_source(tempScene);
 
 	if (duplicate) {
-		OBSSource source = temp.Get();
+		OBSSource source = tempSource.Get();
 		std::string new_name = getNewSourceName(obs_source_get_name(source));
-		temp = obs_source_duplicate(source, new_name.c_str(), false);
+		tempSource = obs_source_duplicate(source, new_name.c_str(), false);
 
 		if (!source) {
 			return std::nullopt;
@@ -172,7 +177,7 @@ std::optional<OBSSceneItem> setupExistingSource(std::string_view uuid, bool visi
 	}
 
 	AddSourceData data;
-	data.source = temp;
+	data.source = tempSource;
 	data.visible = visible;
 
 	if (info) {
@@ -199,13 +204,6 @@ std::optional<OBSSceneItem> setupExistingSource(std::string_view uuid, bool visi
 
 std::optional<OBSSource> setupNewSource(QWidget *parent, const char *id, const char *name)
 {
-	OBSBasic *main = OBSBasic::Get();
-	OBSScene scene = main->GetCurrentScene();
-
-	if (!scene) {
-		return std::nullopt;
-	}
-
 	OBSSourceAutoRelease source = obs_get_source_by_name(name);
 	if (source && parent) {
 		OBSMessageBox::information(parent, QTStr("NameExists.Title"), QTStr("NameExists.Text"));
@@ -223,7 +221,7 @@ std::optional<OBSSource> setupNewSource(QWidget *parent, const char *id, const c
 }
 } // namespace
 
-OBSBasicSourceSelect::OBSBasicSourceSelect(OBSBasic *parent, undo_stack &undo_s)
+OBSBasicSourceSelect::OBSBasicSourceSelect(OBSBasic *parent, OBSScene destination, undo_stack &undo_s)
 	: QDialog(parent),
 	  ui(new Ui::OBSBasicSourceSelect),
 	  undo_s(undo_s),
@@ -233,6 +231,8 @@ OBSBasicSourceSelect::OBSBasicSourceSelect(OBSBasic *parent, undo_stack &undo_s)
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
 	ui->setupUi(this);
+
+	setDestinationScene(destination);
 
 	existingFlowLayout = ui->existingListFrame->flowLayout();
 	existingFlowLayout->setContentsMargins(0, 0, 0, 0);
@@ -310,16 +310,21 @@ void OBSBasicSourceSelect::obsSourceRemoved(void *data, calldata_t *params)
 				  Qt::QueuedConnection, Q_ARG(QString, QString::fromUtf8(uuidPointer)));
 }
 
-void OBSBasicSourceSelect::sourcePaste(SourceCopyInfo &info, bool duplicate)
+void OBSBasicSourceSelect::sourcePaste(OBSSource destinationSource, SourceCopyInfo &info, bool duplicate)
 {
 	OBSSource source = OBSGetStrongRef(info.weak_source);
 	if (!source) {
 		return;
 	}
 
-	std::string uuid = obs_source_get_uuid(source);
+	if (!destinationSource) {
+		return;
+	}
 
-	setupExistingSource(uuid, info.visible, duplicate, &info);
+	std::string uuid = obs_source_get_uuid(source);
+	std::string destinationUuid = obs_source_get_uuid(destinationSource);
+
+	setupExistingSource(uuid, destinationUuid, info.visible, duplicate, &info);
 }
 
 void OBSBasicSourceSelect::showEvent(QShowEvent *)
@@ -726,6 +731,13 @@ SourceSelectButton *OBSBasicSourceSelect::findButtonForUuid(const std::string &u
 	return nullptr;
 }
 
+OBSSource OBSBasicSourceSelect::getDestinationSceneSource()
+{
+	OBSSourceAutoRelease source = obs_weak_source_get_source(destinationSceneWeakSource);
+
+	return source.Get();
+}
+
 void OBSBasicSourceSelect::createNew()
 {
 	bool visible = ui->sourceVisible->isChecked();
@@ -739,6 +751,11 @@ void OBSBasicSourceSelect::createNew()
 	}
 
 	if (selectedTypeId.compare("scene") == 0) {
+		return;
+	}
+
+	OBSSource destinationSource = getDestinationSceneSource();
+	if (!destinationSource) {
 		return;
 	}
 
@@ -756,7 +773,8 @@ void OBSBasicSourceSelect::createNew()
 		return;
 	}
 
-	std::optional<OBSSceneItem> addResult = setupExistingSource(obs_source_get_uuid(newSource), visible, false);
+	std::optional<OBSSceneItem> addResult = setupExistingSource(
+		obs_source_get_uuid(newSource), obs_source_get_uuid(destinationSource), visible, false);
 	if (!addResult.has_value()) {
 		return;
 	}
@@ -764,7 +782,8 @@ void OBSBasicSourceSelect::createNew()
 	OBSSceneItem item = addResult.value();
 
 	OBSBasic *main = reinterpret_cast<OBSBasic *>(App()->GetMainWindow());
-	std::string sceneUuid = obs_source_get_uuid(main->GetCurrentSceneSource());
+
+	std::string sceneUuid = obs_source_get_uuid(destinationSource);
 	auto undo = [sceneUuid](const std::string &data) {
 		OBSBasic *main = OBSBasic::Get();
 
@@ -796,8 +815,9 @@ void OBSBasicSourceSelect::createNew()
 
 		OBSSource source = createResult.value();
 
-		std::optional<OBSSceneItem> addResult =
-			setupExistingSource(obs_source_get_uuid(source), obs_data_get_bool(dat, "visible"), false);
+		std::optional<OBSSceneItem> addResult = setupExistingSource(obs_source_get_uuid(source),
+									    obs_source_get_uuid(sceneSource),
+									    obs_data_get_bool(dat, "visible"), false);
 		if (!addResult.has_value()) {
 			return;
 		}
@@ -816,16 +836,21 @@ void OBSBasicSourceSelect::createNew()
 
 void OBSBasicSourceSelect::addExisting(const std::string &uuid, bool visible)
 {
-	OBSSourceAutoRelease source = obs_get_source_by_uuid(uuid.c_str());
-	if (!source) {
+	OBSSourceAutoRelease existingSource = obs_get_source_by_uuid(uuid.c_str());
+	if (!existingSource) {
 		return;
 	}
 
-	QString name = obs_source_get_name(source);
-	setupExistingSource(uuid, visible, false);
+	OBSSource destinationSource = getDestinationSceneSource();
+	if (!destinationSource) {
+		return;
+	}
+
+	QString name = obs_source_get_name(existingSource);
+	setupExistingSource(uuid, obs_source_get_uuid(destinationSource), visible, false);
 
 	OBSBasic *main = OBSBasic::Get();
-	const char *sceneUuidPtr = obs_source_get_uuid(main->GetCurrentSceneSource());
+	const char *sceneUuidPtr = obs_source_get_uuid(destinationSource);
 	if (!sceneUuidPtr) {
 		return;
 	}
@@ -852,10 +877,29 @@ void OBSBasicSourceSelect::addExisting(const std::string &uuid, bool visible)
 		OBSSourceAutoRelease sceneSource = obs_get_source_by_uuid(sceneUuid.c_str());
 		main->SetCurrentScene(sceneSource.Get(), true);
 
-		setupExistingSource(uuid, visible, false);
+		setupExistingSource(uuid, sceneUuid, visible, false);
 	};
 
 	undo_s.add_action(QTStr("Undo.Add").arg(name), undo, redo, "", "");
+}
+
+void OBSBasicSourceSelect::setDestinationScene(OBSScene scene)
+{
+	OBSSource source = obs_scene_get_source(scene);
+	if (!source) {
+		return;
+	}
+
+	if (obs_source_is_group(source)) {
+		return;
+	}
+
+	OBSWeakSourceAutoRelease weakSource = obs_source_get_weak_source(source);
+	if (destinationSceneWeakSource == weakSource) {
+		return;
+	}
+
+	destinationSceneWeakSource = weakSource;
 }
 
 void OBSBasicSourceSelect::on_createNewSource_clicked(bool)
