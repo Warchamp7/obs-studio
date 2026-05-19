@@ -61,6 +61,7 @@ void addModuleToPluginManagerImpl(void *param, obs_module_t *newModule)
 	}
 }
 
+constexpr int OBSPluginManagerConfigVersion = 2;
 constexpr std::string_view OBSPluginManagerPath = "obs-studio/plugin_manager";
 constexpr std::string_view OBSPluginManagerModulesFile = "modules.json";
 
@@ -103,8 +104,14 @@ void PluginManager::loadModules_()
 			blog(LOG_ERROR, "Generating new config file.");
 			return;
 		}
+
+		maybeMigrateConfig_(data);
+		loadSettings_(data);
+
+		obs_set_load_outdated_modules(shouldLoadOudated_());
+
 		modules_.clear();
-		for (auto it : data) {
+		for (auto it : data["modules"]) {
 			ModuleInfo obsModule;
 			try {
 				obsModule = {it.at("display_name"),
@@ -154,12 +161,44 @@ void PluginManager::linkUnloadedModules_()
 	}
 }
 
+nlohmann::json PluginManager::initializeConfig_()
+{
+	nlohmann::json data = nlohmann::json::object();
+
+	data["version"] = OBSPluginManagerConfigVersion;
+	data["modules"] = nlohmann::json::array();
+	data["settings"] = nlohmann::json::object();
+
+	return data;
+}
+
+void PluginManager::maybeMigrateConfig_(nlohmann::json &data)
+{
+	int version = 1;
+
+	if (data.is_object() && data.contains("version") && data["version"].is_number_integer()) {
+		version = data["version"];
+	}
+
+	if (version == 1) {
+		nlohmann::json modulesData = std::move(data);
+		data = initializeConfig_();
+		data["modules"] = modulesData;
+	}
+}
+
+bool PluginManager::shouldLoadOudated_()
+{
+	return settings_.loadOutdated == MAKE_SEMANTIC_VERSION(LIBOBS_API_MAJOR_VER, LIBOBS_API_MINOR_VER, 0);
+}
+
 void PluginManager::saveModules_()
 {
 	auto modulesFile = getConfigFilePath_();
 	std::ofstream outFile(modulesFile);
-	nlohmann::json data = nlohmann::json::array();
+	nlohmann::json data = initializeConfig_();
 
+	nlohmann::json modulesData = nlohmann::json::array();
 	for (auto const &moduleInfo : modules_) {
 		nlohmann::json modData;
 		modData["display_name"] = moduleInfo.display_name;
@@ -171,9 +210,21 @@ void PluginManager::saveModules_()
 		modData["outputs"] = moduleInfo.outputs;
 		modData["encoders"] = moduleInfo.encoders;
 		modData["services"] = moduleInfo.services;
-		data.push_back(modData);
+		modulesData.push_back(modData);
 	}
+	data["modules"] = std::move(modulesData);
+	data["settings"]["permit_outdated_version"] = settings_.loadOutdated;
+
 	outFile << std::setw(4) << data << std::endl;
+}
+
+void PluginManager::loadSettings_(const nlohmann::json &data)
+{
+	if (data.contains("/settings/permit_outdated_version"_json_pointer)) {
+		if (data.at("/settings/permit_outdated_version"_json_pointer).is_number_integer()) {
+			settings_.loadOutdated = data["/settings/permit_outdated_version"_json_pointer].get<int>();
+		}
+	}
 }
 
 void PluginManager::addModuleTypes_()

@@ -23,6 +23,8 @@
 #include <string>
 #include <vector>
 
+#include <nlohmann/json_fwd.hpp>
+
 namespace OBS {
 
 struct ModuleInfo {
@@ -52,9 +54,17 @@ private:
 	std::filesystem::path getConfigFilePath_();
 	void loadModules_();
 	void saveModules_();
+	void loadSettings_(const nlohmann::json &data);
 	void disableModules_();
 	void addModuleTypes_();
 	void linkUnloadedModules_();
+	nlohmann::json initializeConfig_();
+	void maybeMigrateConfig_(nlohmann::json &data);
+
+	bool shouldLoadOudated_();
+	struct PluginManagerSettings {
+		int loadOutdated = 0;
+	} settings_;
 
 public:
 	void preLoad();

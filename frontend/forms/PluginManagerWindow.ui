@@ -261,7 +261,7 @@
                   <property name="lineWidth">
                    <number>0</number>
                   </property>
-                  <layout class="QVBoxLayout" name="verticalLayout_6">
+                  <layout class="QVBoxLayout" name="modulesListLayout">
                    <property name="spacing">
                     <number>0</number>
                    </property>
@@ -295,6 +295,13 @@
                 </item>
                </layout>
               </widget>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="loadOutdatedCheckbox">
+              <property name="text">
+               <string>PluginManager.Settings.LoadOutdated</string>
+              </property>
              </widget>
             </item>
             <item>

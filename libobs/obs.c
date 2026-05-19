@@ -1257,6 +1257,7 @@ static bool obs_init(const char *locale, const char *module_config_path, profile
 
 	if (module_config_path)
 		obs->module_config_path = bstrdup(module_config_path);
+	obs->load_old_modules = false;
 	obs->locale = bstrdup(locale);
 	obs_register_source(&scene_info);
 	obs_register_source(&group_info);

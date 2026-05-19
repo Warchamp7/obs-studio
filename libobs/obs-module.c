@@ -61,6 +61,26 @@ static int load_module_exports(struct obs_module *mod, const char *path)
 	return MODULE_SUCCESS;
 }
 
+static void load_partial_module_exports(struct obs_module *mod, void *file)
+{
+	void *handle;
+	if (handle = os_dlsym(file, "obs_module_ver")) {
+		mod->ver = handle;
+	}
+
+	if (handle = os_dlsym(file, "obs_module_name")) {
+		mod->name = handle;
+	}
+
+	if (handle = os_dlsym(file, "obs_module_description")) {
+		mod->description = handle;
+	}
+
+	if (handle = os_dlsym(file, "obs_module_author")) {
+		mod->author = handle;
+	}
+}
+
 bool obs_module_get_locale_string(const obs_module_t *mod, const char *lookup_string, const char **translated_string)
 {
 	if (mod->get_string) {
@@ -137,6 +157,16 @@ int obs_module_load_metadata(struct obs_module *mod)
 	return MODULE_SUCCESS;
 }
 
+bool obs_should_load_outdated_modules()
+{
+	return obs->load_old_modules;
+}
+
+void obs_set_load_outdated_modules(bool enable)
+{
+	obs->load_old_modules = enable;
+}
+
 int obs_open_module(obs_module_t **module, const char *path, const char *data_path)
 {
 	struct obs_module mod = {0};
@@ -171,6 +201,12 @@ int obs_open_module(obs_module_t **module, const char *path, const char *data_pa
 	uint32_t ver = mod.ver ? mod.ver() & 0xFFFF0000 : 0;
 	if (ver > LIBOBS_API_VER) {
 		blog(LOG_WARNING, "Module '%s' compiled with newer libobs %d.%d", path, (ver >> 24) & 0xFF,
+		     (ver >> 16) & 0xFF);
+		return MODULE_INCOMPATIBLE_VER;
+	}
+
+	if (ver < (LIBOBS_API_VER & 0xFFFF0000) && !obs_should_load_outdated_modules()) {
+		blog(LOG_WARNING, "Module '%s' compiled with older libobs %d.%d.", path, (ver >> 24) & 0xFF,
 		     (ver >> 16) & 0xFF);
 		return MODULE_INCOMPATIBLE_VER;
 	}
@@ -364,6 +400,11 @@ obs_module_t *obs_get_disabled_module(const char *name)
 	return NULL;
 }
 
+enum obs_module_load_state obs_module_get_load_state(obs_module_t *module)
+{
+	return module ? module->load_state : OBS_MODULE_MISSING;
+}
+
 void *obs_get_module_lib(obs_module_t *module)
 {
 	return module ? module->module : NULL;
@@ -533,7 +574,7 @@ static void load_all_callback(void *param, const struct obs_module_info2 *info)
 	case MODULE_INCOMPATIBLE_VER:
 		blog(LOG_DEBUG, "Failed to load module file '%s', incompatible version", info->bin_path);
 		obs_create_disabled_module(&disabled_module, info->bin_path, info->data_path,
-					   OBS_MODULE_FAILED_TO_OPEN);
+					   OBS_MODULE_INCOMPATIBLE_VER);
 		goto load_failure;
 	case MODULE_HARDCODED_SKIP:
 		return;

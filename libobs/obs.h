@@ -171,6 +171,7 @@ enum obs_module_load_state {
 	OBS_MODULE_DISABLED_SAFE,
 	OBS_MODULE_FAILED_TO_OPEN,
 	OBS_MODULE_FAILED_TO_INITIALIZE,
+	OBS_MODULE_INCOMPATIBLE_VER,
 };
 
 struct obs_transform_info {
@@ -505,6 +506,9 @@ EXPORT obs_module_t *obs_get_module(const char *name);
 /** Returns a module if it is disabled, or NULL if not found in the disabled list */
 EXPORT obs_module_t *obs_get_disabled_module(const char *name);
 
+/** Returns the load state of a module given the id */
+EXPORT enum obs_module_load_state obs_module_get_load_state(obs_module_t *module);
+
 /** Gets library of module */
 EXPORT void *obs_get_module_lib(obs_module_t *module);
 
@@ -659,6 +663,16 @@ EXPORT bool obs_get_module_allow_disable(const char *name);
  * @return         Path string, or NULL if not found.  Use bfree to free string.
  */
 EXPORT char *obs_module_get_config_path(obs_module_t *module, const char *file);
+
+/**
+ * Returns if modules older than the current version of libobs should be loaded
+ *
+ * @return         Boolean to indicate if loading is allowed.
+ */
+EXPORT bool obs_should_load_outdated_modules();
+
+/** Sets if modules older than the current version of libobs should be loaded. */
+EXPORT void obs_set_load_outdated_modules(bool enable);
 
 /** Enumerates all source types (inputs, filters, transitions, etc).  */
 EXPORT bool obs_enum_source_types(size_t idx, const char **id);

@@ -84,55 +84,84 @@ PluginManagerWindow::PluginManagerWindow(std::vector<ModuleInfo> const &modules,
 		return !missingA && missingB;
 	});
 
+	QLabel *currentLibobsLabel = new QLabel(QString("%1.%2.%3")
+							.arg((LIBOBS_API_VER >> 24) & 0xFF)
+							.arg((LIBOBS_API_VER >> 16) & 0xFF)
+							.arg(LIBOBS_API_VER & 0xFF),
+						this);
+
+	ui->modulesList->layout()->addWidget(currentLibobsLabel);
+
+	QVBoxLayout *loadedList = new QVBoxLayout();
+	QVBoxLayout *missingList = new QVBoxLayout();
+
+	QLabel *missingLabel = new QLabel(ui->modulesList);
+	missingLabel->setText(QTStr("PluginManager.MissingPlugin"));
+	missingLabel->setProperty("class", "text-warning text-bold");
+	missingLabel->setIndent(0);
+	missingLabel->setVisible(false);
+
+	ui->modulesListLayout->addLayout(loadedList);
+	ui->modulesListLayout->addWidget(missingLabel);
+	ui->modulesListLayout->addLayout(missingList);
+
 	int row = 0;
-	int missingIndex = -1;
 	for (auto &metadata : modules_) {
 		std::string id = metadata.module_name;
-		// Check if the module is missing:
-		bool missing = !obs_get_module(id.c_str()) && !obs_get_disabled_module(id.c_str());
+		// Check if the module is loaded
+		obs_module_t *module = obs_get_module(id.c_str());
+		if (!module) {
+			module = obs_get_disabled_module(id.c_str());
+		}
+		bool isNotLoaded = !module;
+
+		if (!isNotLoaded) {
+			missingLabel->setVisible(true);
+		}
+
+		enum obs_module_load_state state = obs_module_get_load_state(module);
 
 		QString name = !metadata.display_name.empty() ? metadata.display_name.c_str()
 							      : metadata.module_name.c_str();
 
-		if (missing && missingIndex == -1) {
-			missingIndex = row;
+		if (state == OBS_MODULE_INCOMPATIBLE_VER) {
+			name += QString(" [INCOMPATIBLE]");
+		} else {
+			name += QString(" --- %1").arg(state);
 		}
 
 		auto item = new QCheckBox(name);
 		item->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
 		item->setChecked(metadata.enabled);
 
-		if (!metadata.enabledAtLaunch || missing) {
+		if (!metadata.enabledAtLaunch || isNotLoaded) {
 			item->setProperty("class", "text-muted");
 		}
 
-		ui->modulesList->layout()->addWidget(item);
+		if (isNotLoaded) {
+			missingList->addWidget(item);
+		} else {
+			loadedList->addWidget(item);
+		}
 
 		connect(item, &QCheckBox::toggled, this, [this, row](bool checked) {
 			modules_[row].enabled = checked;
 			ui->manageRestartLabel->setVisible(isEnabledPluginsChanged());
 		});
 
-		row++;
+		++row;
 	}
 
-	QVBoxLayout *layout = qobject_cast<QVBoxLayout *>(ui->modulesList->layout());
 	if (safe_mode) {
 		QLabel *safeModeLabel = new QLabel(ui->modulesList);
 		safeModeLabel->setText(QTStr("PluginManager.SafeMode"));
 		safeModeLabel->setProperty("class", "text-muted text-italic");
 		safeModeLabel->setIndent(0);
 
-		layout->insertWidget(0, safeModeLabel);
-	} else if (missingIndex != -1) {
-		QLabel *missingLabel = new QLabel(ui->modulesList);
-		missingLabel->setText(QTStr("PluginManager.MissingPlugin"));
-		missingLabel->setProperty("class", "text-warning text-bold");
-		missingLabel->setIndent(0);
-
-		layout->insertWidget(missingIndex, new QLabel("", ui->modulesList));
-		layout->insertWidget(missingIndex + 1, missingLabel);
+		ui->modulesListLayout->insertWidget(0, safeModeLabel);
 	}
+
+	// TODO: Hookup loadOutdatedCheckbox to plugin manager settings.
 
 	ui->modulesList->adjustSize();
 	ui->modulesListContents->adjustSize();

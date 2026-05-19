@@ -549,6 +549,7 @@ struct obs_core {
 	DARRAY(char *) safe_modules;
 	DARRAY(char *) disabled_modules;
 	DARRAY(char *) core_modules;
+	bool load_old_modules;
 
 	obs_source_info_array_t source_types;
 	obs_source_info_array_t input_types;
