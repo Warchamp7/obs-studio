@@ -30,7 +30,7 @@ struct lut_filter_data {
 	gs_effect_t *effect;
 	gs_texture_t *target;
 
-	gs_image_file_t image;
+	gs_image_file_ex_t image;
 
 	uint32_t cube_width;
 	void *cube_data;
@@ -54,19 +54,23 @@ static const char *color_grade_filter_get_name(void *unused)
 static gs_texture_t *make_clut_texture_png(const enum gs_color_format format, const uint32_t image_width,
 					   const uint32_t image_height, const uint8_t *data)
 {
-	if (image_width % LUT_WIDTH != 0)
+	if (image_width % LUT_WIDTH != 0) {
 		return NULL;
+	}
 
-	if (image_height % LUT_WIDTH != 0)
+	if (image_height % LUT_WIDTH != 0) {
 		return NULL;
+	}
 
 	const uint32_t pixel_count = LUT_WIDTH * LUT_WIDTH * LUT_WIDTH;
-	if ((image_width * image_height) != pixel_count)
+	if ((image_width * image_height) != pixel_count) {
 		return NULL;
+	}
 
 	const uint32_t bpp = gs_get_format_bpp(format);
-	if (bpp % 8 != 0)
+	if (bpp % 8 != 0) {
 		return NULL;
+	}
 
 	const uint32_t pixel_size = bpp / 8;
 	const uint32_t buffer_size = pixel_size * pixel_count;
@@ -227,23 +231,25 @@ static void color_grade_filter_update(void *data, obs_data_t *settings)
 	struct lut_filter_data *filter = data;
 
 	const char *path = obs_data_get_string(settings, SETTING_IMAGE_PATH);
-	if (path && (*path == '\0'))
+	if (path && (*path == '\0')) {
 		path = NULL;
+	}
 
 	const double clut_amount = obs_data_get_double(settings, SETTING_CLUT_AMOUNT);
 	const bool passthrough_alpha = obs_data_get_bool(settings, SETTING_PASSTHROUGH_ALPHA);
 
 	bfree(filter->file);
-	if (path)
+	if (path) {
 		filter->file = bstrdup(path);
-	else
+	} else {
 		filter->file = NULL;
+	}
 
 	bfree(filter->cube_data);
 	filter->cube_data = NULL;
 
 	obs_enter_graphics();
-	gs_image_file_free(&filter->image);
+	gs_image_file_ex_free(&filter->image);
 	gs_voltexture_destroy(filter->target);
 	filter->target = NULL;
 	obs_leave_graphics();
@@ -261,7 +267,7 @@ static void color_grade_filter_update(void *data, obs_data_t *settings)
 			filter->cube_data = load_cube_file(path, &filter->cube_width, &filter->domain_min,
 							   &filter->domain_max, &clut_dim);
 		} else {
-			gs_image_file_init(&filter->image, path);
+			gs_image_file_ex_init(&filter->image, path, GS_IMAGE_ALPHA_STRAIGHT);
 			filter->cube_width = LUT_WIDTH;
 		}
 
@@ -353,8 +359,9 @@ static obs_properties_t *color_grade_filter_properties(void *data)
 
 	dstr_replace(&path, "\\", "/");
 	slash = strrchr(path.array, '/');
-	if (slash)
+	if (slash) {
 		dstr_resize(&path, slash - path.array + 1);
+	}
 
 	obs_properties_add_text(props, SETTING_SDR_ONLY_INFO, TEXT_SDR_ONLY_INFO, OBS_TEXT_INFO);
 	obs_properties_add_path(props, SETTING_IMAGE_PATH, TEXT_IMAGE_PATH, OBS_PATH_FILE, filter_str.array,
@@ -384,7 +391,7 @@ static void color_grade_filter_destroy(void *data)
 	obs_enter_graphics();
 	gs_effect_destroy(filter->effect);
 	gs_voltexture_destroy(filter->target);
-	gs_image_file_free(&filter->image);
+	gs_image_file_ex_free(&filter->image);
 	obs_leave_graphics();
 
 	bfree(filter->cube_data);
