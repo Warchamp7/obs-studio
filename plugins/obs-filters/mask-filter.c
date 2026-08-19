@@ -37,7 +37,7 @@ struct mask_filter_data {
 	float update_time_elapsed;
 
 	gs_texture_t *target;
-	gs_image_file_t image;
+	gs_image_file_ex_t image;
 	struct vec4 color;
 	bool lock_aspect;
 };
@@ -45,8 +45,9 @@ struct mask_filter_data {
 static time_t get_modified_timestamp(const char *filename)
 {
 	struct stat stats;
-	if (os_stat(filename, &stats) != 0)
+	if (os_stat(filename, &stats) != 0) {
 		return -1;
+	}
 	return stats.st_mtime;
 }
 
@@ -59,7 +60,7 @@ static const char *mask_filter_get_name(void *unused)
 static void mask_filter_image_unload(struct mask_filter_data *filter)
 {
 	obs_enter_graphics();
-	gs_image_file_free(&filter->image);
+	gs_image_file_ex_free(&filter->image);
 	obs_leave_graphics();
 }
 
@@ -71,11 +72,11 @@ static void mask_filter_image_load(struct mask_filter_data *filter)
 
 	if (path && *path) {
 		filter->image_file_timestamp = get_modified_timestamp(path);
-		gs_image_file_init(&filter->image, path);
+		gs_image_file_ex_init(&filter->image, path, GS_IMAGE_ALPHA_STRAIGHT);
 		filter->update_time_elapsed = 0;
 
 		obs_enter_graphics();
-		gs_image_file_init_texture(&filter->image);
+		gs_image_file_ex_init_texture(&filter->image);
 		obs_leave_graphics();
 	}
 
@@ -91,14 +92,16 @@ static void mask_filter_update_internal(void *data, obs_data_t *settings, float 
 	uint32_t color = (uint32_t)obs_data_get_int(settings, SETTING_COLOR);
 	char *effect_path;
 
-	if (filter->image_file)
+	if (filter->image_file) {
 		bfree(filter->image_file);
+	}
 	filter->image_file = bstrdup(path);
 
-	if (srgb)
+	if (srgb) {
 		vec4_from_rgba_srgb(&filter->color, color);
-	else
+	} else {
 		vec4_from_rgba(&filter->color, color);
+	}
 	filter->color.w = opacity;
 
 	mask_filter_image_load(filter);
@@ -204,12 +207,13 @@ static void mask_filter_destroy(void *data)
 {
 	struct mask_filter_data *filter = data;
 
-	if (filter->image_file)
+	if (filter->image_file) {
 		bfree(filter->image_file);
+	}
 
 	obs_enter_graphics();
 	gs_effect_destroy(filter->effect);
-	gs_image_file_free(&filter->image);
+	gs_image_file_ex_free(&filter->image);
 	obs_leave_graphics();
 
 	bfree(filter);
@@ -232,12 +236,13 @@ static void mask_filter_tick(void *data, float seconds)
 	if (filter->image.is_animated_gif) {
 		uint64_t cur_time = obs_get_video_frame_time();
 
-		if (!filter->last_time)
+		if (!filter->last_time) {
 			filter->last_time = cur_time;
+		}
 
-		gs_image_file_tick(&filter->image, cur_time - filter->last_time);
+		gs_image_file_ex_tick(&filter->image, cur_time - filter->last_time);
 		obs_enter_graphics();
-		gs_image_file_update_texture(&filter->image);
+		gs_image_file_ex_update_texture(&filter->image);
 		obs_leave_graphics();
 
 		filter->last_time = cur_time;
