@@ -24,7 +24,7 @@
 namespace idian {
 ExpandButton::ExpandButton(QWidget *parent) : InlineButton(parent)
 {
-	widgetUtils = new Utils(this);
+	widgetUtils = std::make_unique<Utils>(this);
 	widgetUtils->applyStateStylingEventFilter(this);
 
 	setCheckable(true);

@@ -33,6 +33,6 @@ public:
 	explicit ExpandButton(QWidget *parent = nullptr);
 
 private:
-	Utils *widgetUtils;
+	std::unique_ptr<Utils> widgetUtils;
 };
 } // namespace idian

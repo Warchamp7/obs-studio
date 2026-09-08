@@ -21,7 +21,7 @@
 namespace idian {
 InlineButton::InlineButton(QWidget *parent) : QPushButton(parent)
 {
-	widgetUtils = new Utils(this);
+	widgetUtils = std::make_unique<Utils>(this);
 	widgetUtils->applyStateStylingEventFilter(this);
 }
 } // namespace idian

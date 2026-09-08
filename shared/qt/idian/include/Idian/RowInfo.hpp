@@ -44,7 +44,7 @@ public:
 	QLabel *description() { return descriptionLabel; }
 
 private:
-	Utils *widgetUtils;
+	std::unique_ptr<Utils> widgetUtils;
 
 	QVBoxLayout *layout_ = nullptr;
 

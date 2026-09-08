@@ -45,7 +45,7 @@ public:
 	bool isCheckable() { return checkable; }
 
 private:
-	Utils *widgetUtils;
+	std::unique_ptr<Utils> widgetUtils;
 
 	QHBoxLayout *layout_ = nullptr;
 

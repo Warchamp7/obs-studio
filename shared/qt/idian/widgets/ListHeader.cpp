@@ -24,7 +24,7 @@ using idian::ListHeader;
 
 ListHeader::ListHeader(QWidget *parent) : QFrame(parent), Utils(this)
 {
-	widgetUtils = new idian::Utils(this);
+	widgetUtils = std::make_unique<Utils>(this);
 
 	layout_ = new QHBoxLayout();
 	layout_->setSpacing(0);

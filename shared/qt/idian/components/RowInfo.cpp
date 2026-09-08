@@ -24,7 +24,7 @@
 namespace idian {
 RowInfo::RowInfo(QWidget *parent) : QWidget(parent)
 {
-	widgetUtils = new idian::Utils(this);
+	widgetUtils = std::make_unique<Utils>(this);
 
 	layout_ = new QVBoxLayout();
 	layout_->setSpacing(0);
