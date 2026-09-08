@@ -24,19 +24,19 @@
 
 namespace idian {
 
-class DoubleSpinBox : public QFrame {
+class RowSpinBox : public QFrame {
 	Q_OBJECT;
 
 public:
-	DoubleSpinBox(QWidget *parent = nullptr);
+	RowSpinBox(QWidget *parent = nullptr);
 
-	QDoubleSpinBox *spinBox() const { return sbox; }
+	QSpinBox *spinBox() const { return sbox; }
 
 private:
 	QHBoxLayout *layout;
 	QPushButton *decr;
 	QPushButton *incr;
-	QDoubleSpinBox *sbox;
+	QSpinBox *sbox;
 };
 
 } // namespace idian

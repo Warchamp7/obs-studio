@@ -15,28 +15,35 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
-#pragma once
+#include <Idian/RowDoubleSpinBox.hpp>
 
-#include <QFrame>
-#include <QLayout>
-#include <QPushButton>
-#include <QSpinBox>
+#include <Idian/moc_RowDoubleSpinBox.cpp>
 
-namespace idian {
+using idian::RowDoubleSpinBox;
 
-class SpinBox : public QFrame {
-	Q_OBJECT;
+RowDoubleSpinBox::RowDoubleSpinBox(QWidget *parent) : QFrame(parent)
+{
+	layout = new QHBoxLayout();
+	setLayout(layout);
 
-public:
-	SpinBox(QWidget *parent = nullptr);
+	layout->setContentsMargins(0, 0, 0, 0);
 
-	QSpinBox *spinBox() const { return sbox; }
+	decr = new QPushButton("-");
+	decr->setObjectName("obsSpinBoxButton");
+	layout->addWidget(decr);
 
-private:
-	QHBoxLayout *layout;
-	QPushButton *decr;
-	QPushButton *incr;
-	QSpinBox *sbox;
-};
+	setFocusProxy(decr);
 
-} // namespace idian
+	sbox = new QDoubleSpinBox();
+	sbox->setObjectName("obsSpinBox");
+	sbox->setButtonSymbols(QAbstractSpinBox::NoButtons);
+	sbox->setAlignment(Qt::AlignCenter);
+	layout->addWidget(sbox);
+
+	incr = new QPushButton("+");
+	incr->setObjectName("obsSpinBoxButton");
+	layout->addWidget(incr);
+
+	connect(decr, &QPushButton::pressed, sbox, &QDoubleSpinBox::stepDown);
+	connect(incr, &QPushButton::pressed, sbox, &QDoubleSpinBox::stepUp);
+}

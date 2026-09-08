@@ -112,7 +112,7 @@ OBSIdianPlayground::OBSIdianPlayground(QWidget *parent) : QDialog(parent), ui(ne
 
 	tmp = new Row();
 	tmp->addWidget(new RowInfo(tmp, "Spin box demo"));
-	tmp->addBuddy(new DoubleSpinBox());
+	tmp->addBuddy(new RowDoubleSpinBox());
 	tmp2->list()->addRow(tmp);
 
 	tmp = new Row();

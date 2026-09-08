@@ -23,8 +23,8 @@
 
 #include <Idian/CheckBox.hpp>
 #include <Idian/ComboBox.hpp>
-#include <Idian/DoubleSpinBox.hpp>
-#include <Idian/RowList.hpp>
 #include <Idian/Row.hpp>
-#include <Idian/SpinBox.hpp>
+#include <Idian/RowDoubleSpinBox.hpp>
+#include <Idian/RowList.hpp>
+#include <Idian/RowSpinBox.hpp>
 #include <Idian/ToggleSwitch.hpp>

@@ -15,32 +15,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
-#include <Idian/SpinBox.hpp>
+#pragma once
 
-#include <Idian/moc_SpinBox.cpp>
+#include <QFrame>
+#include <QLayout>
+#include <QPushButton>
+#include <QSpinBox>
 
-using idian::SpinBox;
+namespace idian {
 
-SpinBox::SpinBox(QWidget *parent) : QFrame(parent)
-{
-	layout = new QHBoxLayout();
-	setLayout(layout);
+class RowDoubleSpinBox : public QFrame {
+	Q_OBJECT;
 
-	layout->setContentsMargins(0, 0, 0, 0);
+public:
+	RowDoubleSpinBox(QWidget *parent = nullptr);
 
-	decr = new QPushButton("-");
-	decr->setObjectName("obsSpinBoxButton");
-	layout->addWidget(decr);
+	QDoubleSpinBox *spinBox() const { return sbox; }
 
-	sbox = new QSpinBox();
-	sbox->setObjectName("obsSpinBox");
-	sbox->setButtonSymbols(QAbstractSpinBox::NoButtons);
-	layout->addWidget(sbox);
+private:
+	QHBoxLayout *layout;
+	QPushButton *decr;
+	QPushButton *incr;
+	QDoubleSpinBox *sbox;
+};
 
-	incr = new QPushButton("+");
-	incr->setObjectName("obsSpinBoxButton");
-	layout->addWidget(incr);
-
-	connect(decr, &QPushButton::pressed, sbox, &QSpinBox::stepDown);
-	connect(incr, &QPushButton::pressed, sbox, &QSpinBox::stepUp);
-}
+} // namespace idian
