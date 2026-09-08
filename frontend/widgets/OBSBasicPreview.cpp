@@ -224,28 +224,32 @@ vec3 OBSBasicPreview::GetSnapOffset(const vec3 &tl, const vec3 &br)
 		if (tryEdgeSnapForOffset(tl.x, 0, clampDist, clampOffset.x)) {
 			vec2 startPoint{0, 0};
 			vec2 endPoint{0, screenSize.y};
-			main->addSnapGuide(SnapGuide{startPoint, endPoint});
+			SnapGuide guide{startPoint, endPoint};
+			main->addSnapGuide(guide);
 		}
 
 		// Right screen edge.
 		if (tryEdgeSnapForOffset(br.x, screenSize.x, clampDist, clampOffset.x)) {
 			vec2 startPoint{screenSize.x, 0};
 			vec2 endPoint{screenSize.x, screenSize.y};
-			main->addSnapGuide(SnapGuide{startPoint, endPoint});
+			SnapGuide guide{startPoint, endPoint};
+			main->addSnapGuide(guide);
 		}
 
 		// Top screen edge.
 		if (tryEdgeSnapForOffset(tl.y, 0, clampDist, clampOffset.y)) {
 			vec2 startPoint{0, 0};
 			vec2 endPoint{screenSize.x, 0};
-			main->addSnapGuide(SnapGuide{startPoint, endPoint});
+			SnapGuide guide{startPoint, endPoint};
+			main->addSnapGuide(guide);
 		}
 
 		// Bottom screen edge.
 		if (tryEdgeSnapForOffset(br.y, screenSize.y, clampDist, clampOffset.y)) {
 			vec2 startPoint{0, screenSize.y};
 			vec2 endPoint{screenSize.x, screenSize.y};
-			main->addSnapGuide(SnapGuide{startPoint, endPoint});
+			SnapGuide guide{startPoint, endPoint};
+			main->addSnapGuide(guide);
 		}
 	}
 
@@ -257,7 +261,8 @@ vec3 OBSBasicPreview::GetSnapOffset(const vec3 &tl, const vec3 &br)
 
 			vec2 startPoint{screenSize.x / 2.0f, 0};
 			vec2 endPoint{screenSize.x / 2.0f, screenSize.y};
-			main->addSnapGuide(SnapGuide{startPoint, endPoint});
+			SnapGuide guide{startPoint, endPoint};
+			main->addSnapGuide(guide);
 		}
 
 		// Vertical center.
@@ -267,7 +272,8 @@ vec3 OBSBasicPreview::GetSnapOffset(const vec3 &tl, const vec3 &br)
 
 			vec2 startPoint{0, screenSize.y / 2.0f};
 			vec2 endPoint{screenSize.x, screenSize.y / 2.0f};
-			main->addSnapGuide(SnapGuide{startPoint, endPoint});
+			SnapGuide guide{startPoint, endPoint};
+			main->addSnapGuide(guide);
 		}
 	}
 
@@ -1030,19 +1036,23 @@ static bool GetSourceSnapOffset(obs_scene_t * /* scene */, obs_sceneitem_t *item
 	}
 
 	if (tryEdgeSnapForOffset(movingEdge.x, itemEdge.x, data->clampDist, data->offset.x)) {
-		main->addSnapGuide(SnapGuide{{itemEdge.x, 0.0f}, {itemEdge.x, screen.y}});
+		SnapGuide guide{{itemEdge.x, 0.0f}, {itemEdge.x, screen.y}};
+		main->addSnapGuide(guide);
 	} else if (tryEdgeSnapForOffset(moveRect.center().x(), itemRect.center().x(), data->clampDist,
 					data->offset.x)) {
 		float itemCenterX = static_cast<float>(itemRect.center().x());
-		main->addSnapGuide(SnapGuide{{itemCenterX, 0.0f}, {itemCenterX, screen.y}});
+		SnapGuide guide{{itemCenterX, 0.0f}, {itemCenterX, screen.y}};
+		main->addSnapGuide(guide);
 	}
 
 	if (tryEdgeSnapForOffset(movingEdge.y, itemEdge.y, data->clampDist, data->offset.y)) {
-		main->addSnapGuide(SnapGuide{{0.0f, itemEdge.y}, {screen.x, itemEdge.y}});
+		SnapGuide guide{{0.0f, itemEdge.y}, {screen.x, itemEdge.y}};
+		main->addSnapGuide(guide);
 	} else if (tryEdgeSnapForOffset(moveRect.center().y(), itemRect.center().y(), data->clampDist,
 					data->offset.y)) {
 		float itemCenterY = static_cast<float>(itemRect.center().y());
-		main->addSnapGuide(SnapGuide{{0.0f, itemCenterY}, {screen.x, itemCenterY}});
+		SnapGuide guide{{0.0f, itemCenterY}, {screen.x, itemCenterY}};
+		main->addSnapGuide(guide);
 	}
 
 	return true;
