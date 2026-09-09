@@ -16,13 +16,8 @@
 ******************************************************************************/
 
 #include <Idian/ComboBox.hpp>
-#include <Idian/DoubleSpinBox.hpp>
-#include <Idian/ExpandButton.hpp>
-#include <Idian/RowList.hpp>
 #include <Idian/Row.hpp>
-#include <Idian/SpinBox.hpp>
 #include <Idian/ToggleSwitch.hpp>
-#include <Idian/Utils.hpp>
 
 #include <QApplication>
 #include <QComboBox>
