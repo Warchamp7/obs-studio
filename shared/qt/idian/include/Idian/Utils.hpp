@@ -38,7 +38,12 @@ class Utils : public QObject {
 	}
 
 public:
-	Utils(QObject *parent = nullptr) {};
+	Utils() : QObject(nullptr) {};
+
+	bool isPolishPending{false};
+	std::list<QWidget *> widgetPolishQueue;
+	void addToPolishQueue(QWidget *widget);
+	void processPolishQueue();
 
 	// Force all children widgets to repaint
 	static void polishChildren(QWidget *widget);

@@ -26,6 +26,34 @@
 #include <QStyleOptionFrame>
 
 namespace idian {
+Q_GLOBAL_STATIC(Utils, utils);
+
+void Utils::addToPolishQueue(QWidget *widget)
+{
+	widgetPolishQueue.push_back(widget);
+
+	if (isPolishPending) {
+		return;
+	}
+
+	isPolishPending = true;
+
+	QMetaObject::invokeMethod(this, &Utils::processPolishQueue, Qt::QueuedConnection);
+}
+
+void Utils::processPolishQueue()
+{
+	widgetPolishQueue.sort();
+	widgetPolishQueue.unique();
+
+	for (QWidget *widget : widgetPolishQueue) {
+		widget->style()->polish(widget);
+	}
+
+	isPolishPending = false;
+	widgetPolishQueue.clear();
+}
+
 void Utils::polishChildren(QWidget *widget)
 {
 	for (QWidget *child : widget->findChildren<QWidget *>()) {
@@ -35,7 +63,7 @@ void Utils::polishChildren(QWidget *widget)
 
 void Utils::repolish(QWidget *widget)
 {
-	widget->style()->polish(widget);
+	utils->addToPolishQueue(widget);
 }
 
 void Utils::addClass(QWidget *widget, const QString &classname)
