@@ -45,10 +45,10 @@ public:
 
 	QHBoxLayout *layout() { return rowLayout; }
 
-	// Convenience function to add a widget to the rows layout.
+	// Convenience function to add a widget to the row's layout.
 	void addWidget(QWidget *widget) { layout()->addWidget(widget); }
 
-	// Convenience function to add a widget to the rows layout and then set it as the buddy.
+	// Convenience function to add a widget to the row's layout and then set it as the buddy.
 	void addBuddy(QWidget *widget)
 	{
 		layout()->addWidget(widget);

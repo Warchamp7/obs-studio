@@ -18,8 +18,8 @@
 #include <Idian/CollapsibleGroup.hpp>
 #include <Idian/ExpandButton.hpp>
 #include <Idian/Row.hpp>
-#include <Idian/RowList.hpp>
 #include <Idian/RowInfo.hpp>
+#include <Idian/RowList.hpp>
 #include <Idian/ToggleSwitch.hpp>
 #include <Idian/Utils.hpp>
 

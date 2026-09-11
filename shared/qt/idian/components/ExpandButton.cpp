@@ -18,8 +18,8 @@
 #include <Idian/ExpandButton.hpp>
 #include <Idian/Utils.hpp>
 
-#include <QStyleOptionButton>
 #include <QPainter>
+#include <QStyleOptionButton>
 
 namespace idian {
 ExpandButton::ExpandButton(QWidget *parent) : InlineButton(parent)
