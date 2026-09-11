@@ -16,7 +16,6 @@
 ******************************************************************************/
 
 #include <Idian/ExpandButton.hpp>
-#include <Idian/Utils.hpp>
 
 #include <QPainter>
 #include <QStyleOptionButton>
@@ -24,8 +23,7 @@
 namespace idian {
 ExpandButton::ExpandButton(QWidget *parent) : InlineButton(parent)
 {
-	widgetUtils = std::make_unique<Utils>(this);
-	widgetUtils->applyStateStylingEventFilter(this);
+	Utils::applyStateStylingEventFilter(this);
 
 	setCheckable(true);
 }

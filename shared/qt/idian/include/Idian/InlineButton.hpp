@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <Idian/Utils.hpp>
+
 #include <QPushButton>
 
 class QPixmap;
@@ -24,13 +26,10 @@ class QPixmap;
 namespace idian {
 class Utils;
 
-class InlineButton : public QPushButton {
+class InlineButton : public QPushButton, public Utils {
 	Q_OBJECT
 
 public:
 	explicit InlineButton(QWidget *parent = nullptr);
-
-private:
-	std::unique_ptr<Utils> widgetUtils;
 };
 } // namespace idian

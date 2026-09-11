@@ -17,8 +17,6 @@
 
 #pragma once
 
-#include <Idian/Utils.hpp>
-
 #include <QFrame>
 
 class QPixmap;
@@ -31,7 +29,7 @@ class ExpandButton;
 class RowList;
 class ToggleSwitch;
 
-class CollapsibleGroup : public QFrame, public Utils {
+class CollapsibleGroup : public QFrame {
 	Q_OBJECT
 
 public:

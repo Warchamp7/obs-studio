@@ -22,10 +22,8 @@
 
 using idian::ListHeader;
 
-ListHeader::ListHeader(QWidget *parent) : QFrame(parent), Utils(this)
+ListHeader::ListHeader(QWidget *parent) : QFrame(parent)
 {
-	widgetUtils = std::make_unique<Utils>(this);
-
 	layout_ = new QHBoxLayout();
 	layout_->setSpacing(0);
 	layout_->setContentsMargins(0, 0, 0, 0);
@@ -37,11 +35,11 @@ ListHeader::ListHeader(QWidget *parent) : QFrame(parent), Utils(this)
 	auto *textLayout = new QVBoxLayout();
 	nameLabel = new QLabel();
 	nameLabel->setVisible(false);
-	widgetUtils->addClass(nameLabel, "title");
+	Utils::addClass(nameLabel, "title");
 
 	descriptionLabel = new QLabel();
 	descriptionLabel->setVisible(false);
-	widgetUtils->addClass(descriptionLabel, "description");
+	Utils::addClass(descriptionLabel, "description");
 
 	textLayout->addWidget(nameLabel);
 	textLayout->addWidget(descriptionLabel);

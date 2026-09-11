@@ -27,7 +27,7 @@
 #include <QVBoxLayout>
 
 namespace idian {
-CollapsibleGroup::CollapsibleGroup(QWidget *parent) : QFrame(parent), Utils(this)
+CollapsibleGroup::CollapsibleGroup(QWidget *parent) : QFrame(parent)
 {
 	mainLayout = new QVBoxLayout(this);
 	mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -98,7 +98,7 @@ void CollapsibleGroup::toggleVisibility()
 
 void CollapsibleGroup::setExpanded(bool expand)
 {
-	Utils::toggleClass("expanded", expand);
+	Utils::toggleClass(this, "expanded", expand);
 	Utils::repolish(rowWidget);
 
 	propertyList->setVisible(expand);

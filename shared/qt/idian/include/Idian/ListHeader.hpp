@@ -27,7 +27,7 @@
 
 namespace idian {
 
-class ListHeader : public QFrame, public Utils {
+class ListHeader : public QFrame {
 	Q_OBJECT
 
 public:
@@ -45,8 +45,6 @@ public:
 	bool isCheckable() { return checkable; }
 
 private:
-	std::unique_ptr<Utils> widgetUtils;
-
 	QHBoxLayout *layout_ = nullptr;
 
 	QLabel *nameLabel = nullptr;

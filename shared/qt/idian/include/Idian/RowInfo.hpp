@@ -23,7 +23,6 @@ class QLabel;
 class QVBoxLayout;
 
 namespace idian {
-class Utils;
 
 class RowInfo : public QWidget {
 	Q_OBJECT
@@ -44,8 +43,6 @@ public:
 	QLabel *description() { return descriptionLabel; }
 
 private:
-	std::unique_ptr<Utils> widgetUtils;
-
 	QVBoxLayout *layout_ = nullptr;
 
 	QLabel *nameLabel = nullptr;

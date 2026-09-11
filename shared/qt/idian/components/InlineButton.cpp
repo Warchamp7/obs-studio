@@ -16,12 +16,10 @@
 ******************************************************************************/
 
 #include <Idian/InlineButton.hpp>
-#include <Idian/Utils.hpp>
 
 namespace idian {
-InlineButton::InlineButton(QWidget *parent) : QPushButton(parent)
+InlineButton::InlineButton(QWidget *parent) : QPushButton(parent), Utils(this)
 {
-	widgetUtils = std::make_unique<Utils>(this);
-	widgetUtils->applyStateStylingEventFilter(this);
+	Utils::applyStateStylingEventFilter(this);
 }
 } // namespace idian

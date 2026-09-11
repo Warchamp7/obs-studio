@@ -24,15 +24,11 @@
 class QPixmap;
 
 namespace idian {
-class Utils;
 
 class ExpandButton : public InlineButton {
 	Q_OBJECT
 
 public:
 	explicit ExpandButton(QWidget *parent = nullptr);
-
-private:
-	std::unique_ptr<Utils> widgetUtils;
 };
 } // namespace idian

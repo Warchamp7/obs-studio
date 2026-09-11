@@ -24,8 +24,6 @@
 namespace idian {
 RowInfo::RowInfo(QWidget *parent) : QWidget(parent)
 {
-	widgetUtils = std::make_unique<Utils>(this);
-
 	layout_ = new QVBoxLayout();
 	layout_->setSpacing(0);
 	layout_->setContentsMargins(0, 0, 0, 0);
@@ -36,11 +34,11 @@ RowInfo::RowInfo(QWidget *parent) : QWidget(parent)
 
 	nameLabel = new QLabel();
 	nameLabel->setVisible(false);
-	widgetUtils->addClass(nameLabel, "title");
+	Utils::addClass(nameLabel, "title");
 
 	descriptionLabel = new QLabel();
 	descriptionLabel->setVisible(false);
-	widgetUtils->addClass(descriptionLabel, "description");
+	Utils::addClass(descriptionLabel, "description");
 
 	layout_->addWidget(nameLabel);
 	layout_->addWidget(descriptionLabel);
