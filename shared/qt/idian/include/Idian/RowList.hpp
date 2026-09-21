@@ -35,6 +35,8 @@ public:
 	void addRow(QWidget *row);
 	void clear();
 
+	const int count();
+
 private:
 	QWidget *first = nullptr;
 	QWidget *last = nullptr;
