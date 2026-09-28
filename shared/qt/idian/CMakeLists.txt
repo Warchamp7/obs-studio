@@ -16,6 +16,8 @@ target_sources(
     components/RowDoubleSpinBox.cpp
     components/RowInfo.cpp
     components/RowSpinBox.cpp
+    components/GuidePopup.cpp
+    components/InfoPopup.cpp
     components/ToggleSwitch.cpp
     components/Tooltip.cpp
     include/Idian/AbstractPopup.hpp
@@ -26,7 +28,9 @@ target_sources(
     include/Idian/Idian.hpp
     include/Idian/InlineButton.hpp
     include/Idian/ListHeader.hpp
+    include/Idian/GuidePopup.hpp
     include/Idian/Idian.hpp
+    include/Idian/InfoPopup.hpp
     include/Idian/PopupContents.hpp
     include/Idian/Row.hpp
     include/Idian/RowDoubleSpinBox.hpp
