@@ -1563,36 +1563,22 @@ void OBSBasic::close()
 		return;
 	}
 
-	OBSMainWindow::close();
-}
-
-void OBSBasic::closeEvent(QCloseEvent *event)
-{
-	if (isClosePromptOpen() || isClosing()) {
-		return;
-	}
-
 	if (isVisible()) {
 		config_set_string(App()->GetUserConfig(), "BasicWindow", "geometry",
 				  saveGeometry().toBase64().constData());
 	}
 
 	if (!isReadyToClose()) {
-		event->ignore();
-
 		QTimer::singleShot(1000, this, &OBSBasic::close);
 		return;
 	}
 
 	if (remux && !remux->close()) {
-		event->ignore();
 		restart = false;
-
 		return;
 	}
 
 	if (shouldPromptForClose()) {
-		event->ignore();
 		restart = false;
 
 		if (!isClosePromptOpen()) {
@@ -1606,12 +1592,16 @@ void OBSBasic::closeEvent(QCloseEvent *event)
 		return;
 	}
 
-	QWidget::closeEvent(event);
-	if (!event->isAccepted()) {
-		return;
-	}
-
 	closeWindow();
+}
+
+void OBSBasic::closeEvent(QCloseEvent *event)
+{
+	OBSBasic::close();
+
+	if (!isClosing()) {
+		event->ignore();
+	}
 }
 
 bool OBSBasic::nativeEvent(const QByteArray &, void *message, qintptr *)
